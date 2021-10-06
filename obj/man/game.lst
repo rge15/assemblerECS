@@ -1,0 +1,224 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 
+                              2 
+                              3 
+                              4 ;===================================================================================================================================================
+                              5 ; CPCTelera functions
+                              6 ;===================================================================================================================================================
+                              7 
+                              8 .globl cpct_waitHalts_asm
+                              9 .globl cpct_waitVSYNC_asm
+                             10 .globl cpct_memcpy_asm
+                             11 
+                             12 
+                             13 ;===================================================================================================================================================
+                             14 ; Public functions
+                             15 ;===================================================================================================================================================
+                             16 .globl _man_entityInit
+                             17 .globl _man_createEntity
+                             18 .globl _man_entityUpdate
+                             19 .globl _sys_physics_update
+                             20 .globl _sys_render_update
+                             21 .globl _sys_animator_update
+                             22 .globl _sys_init_render
+                             23 .globl _sys_ai_update
+                             24 .globl _sys_ai_behaviourLeftRight
+                             25 .globl _sys_ai_behaviourMothership
+                             26 
+                             27 
+                             28 ;===================================================================================================================================================
+                             29 ; Public data
+                             30 ;===================================================================================================================================================
+                             31 ;;Animations
+                             32 .globl _man_anim_player
+                             33 ;;Sprites
+                             34 .globl _sprite_player01
+                             35 .globl _sprite_player02
+                             36 .globl _sprite_mothership
+                             37 .globl _sprite_enemy
+                             38   
+                             39 
+                             40 ;===================================================================================================================================================
+                             41 ; Templates
+                             42 ;===================================================================================================================================================
+   0000                      43 _mothership_template_e:
+   0000 0B                   44    .db #0x0B   ; type
+   0001 26                   45    .db #0x26   ; x
+   0002 0A                   46    .db #0x0A   ; y
+   0003 04                   47    .db #0x04   ; width
+   0004 06                   48    .db #0x06   ; heigth
+   0005 FF                   49    .db #0xFF   ; vx
+   0006 00                   50    .db #0x00   ; vy
+   0007 00 00                51    .dw #_sprite_mothership ; sprite
+   0009 00 00                52    .dw #_sys_ai_behaviourMothership ;ai_behaviour
+   000B 00 00                53    .dw #0x0000 ;animator
+   000D 00                   54    .db #0x00   ;anim. counter
+                             55 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+   000E                      56 _enemy_template_e:
+   000E 0B                   57    .db #0x0B   ; type
+   000F 26                   58    .db #0x26   ; x
+   0010 1E                   59    .db #0x1E   ; y
+   0011 06                   60    .db #0x06   ; width
+   0012 06                   61    .db #0x06   ; heigth
+   0013 01                   62    .db #0x01   ; vx
+   0014 00                   63    .db #0x00   ; vy
+   0015 00 00                64    .dw #_sprite_enemy ; sprite
+   0017 00 00                65    .dw #_sys_ai_behaviourLeftRight ;ai_behaviour
+   0019 00 00                66    .dw #0x0000 ;animator
+   001B 00                   67    .db #0x00   ;anim. counter
+                             68 
+                             69 
+   001C                      70 _playerLife_template_e:
+   001C 01                   71    .db #0x01   ; type
+   001D 00                   72    .db #0x00   ; x
+   001E C0                   73    .db #0xC0   ; y
+   001F 06                   74    .db #0x06   ; width
+   0020 08                   75    .db #0x08   ; heigth
+   0021 00                   76    .db #0x00   ; vx
+   0022 00                   77    .db #0x00   ; vy
+   0023 00 00                78    .dw #_sprite_player01 ; sprite
+   0025 00 00                79    .dw #0x0000 ;ai_behaviour
+   0027 00 00                80    .dw #0x0000 ;animator
+   0029 00                   81    .db #0x00   ;anim. counter
+                             82 
+   002A                      83 _player_template_e:
+   002A 17                   84    .db #0x17   ; type
+   002B 26                   85    .db #0x26   ; x
+   002C B0                   86    .db #0xB0   ; y
+   002D 06                   87    .db #0x06   ; width
+   002E 08                   88    .db #0x08   ; heigth
+   002F 00                   89    .db #0x00   ; vx
+   0030 00                   90    .db #0x00   ; vy
+   0031 00 00                91    .dw #_sprite_player01 ; sprite
+   0033 00 00                92    .dw #0x0000 ;ai_behaviour
+   0035 00 00                93    .dw #_man_anim_player ;animator
+   0037 10                   94    .db #0x10   ;anim. counter
+                             95 
+                             96 
+                             97 
+                             98 ;===================================================================================================================================================
+                             99 ; Manager data
+                            100 ;===================================================================================================================================================
+   0038                     101 _enemyOnLane:
+   0038 00                  102    .db #0x00
+                            103 
+                            104 ;===================================================================================================================================================
+                            105 ; FUNCION _m_game_createInitTemplate   
+                            106 ; Crea la entidad con el template indicado
+                            107 ; BC : Valor de template a crear
+                            108 ;===================================================================================================================================================
+   0039                     109 _m_game_createInitTemplate::
+   0039 CD 00 00      [17]  110    call _man_createEntity
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+   003C E5            [11]  111    push hl
+   003D EB            [ 4]  112    ex de,hl
+   003E 60            [ 4]  113    ld h, b
+   003F 69            [ 4]  114    ld l, c
+   0040 01 0E 00      [10]  115    ld bc,#0x000E
+   0043 CD 00 00      [17]  116    call cpct_memcpy_asm
+   0046 E1            [10]  117    pop hl
+   0047 C9            [10]  118    ret
+                            119 
+                            120 
+                            121 ;===================================================================================================================================================
+                            122 ; FUNCION _m_game_init   
+                            123 ; Inicializa el juego y sus entidades
+                            124 ; NO llega ningun dato
+                            125 ;===================================================================================================================================================
+   0048                     126 _m_game_init::
+   0048 CD 00 00      [17]  127    call  _sys_init_render
+   004B CD 00 00      [17]  128    call  _man_entityInit
+                            129 
+                            130 
+                            131    ; Create MotherBoard
+   004E 01 00 00      [10]  132    ld bc, #_mothership_template_e   
+   0051 CD 39 00      [17]  133    call _m_game_createInitTemplate
+                            134 
+                            135    ; Create Lifes
+   0054 3E 0F         [ 7]  136    ld a,#0x0F
+   0056                     137    createLife:
+   0056 F5            [11]  138    push af
+   0057 01 1C 00      [10]  139    ld bc, #_playerLife_template_e
+   005A CD 39 00      [17]  140    call _m_game_createInitTemplate
+   005D 23            [ 6]  141    inc hl
+   005E F1            [10]  142    pop af
+   005F 77            [ 7]  143    ld (hl), a
+                            144 
+   0060 D6 05         [ 7]  145    sub #0x05
+   0062 20 F2         [12]  146    jr NZ, createLife
+                            147 
+                            148    ; CreatePlayer
+   0064 01 2A 00      [10]  149    ld bc, #_player_template_e
+   0067 CD 39 00      [17]  150    call _m_game_createInitTemplate
+   006A C9            [10]  151 ret
+                            152 
+                            153 
+                            154 ;===================================================================================================================================================
+                            155 ; FUNCION _m_game_play   
+                            156 ; Bucle del juego
+                            157 ; NO llega ningun dato
+                            158 ;===================================================================================================================================================
+   006B                     159 _m_game_play::
+   006B                     160    updates:
+   006B CD 00 00      [17]  161       call _sys_ai_update
+   006E CD 00 00      [17]  162       call _sys_physics_update
+   0071 CD 00 00      [17]  163       call _sys_animator_update
+   0074 CD 00 00      [17]  164       call _sys_render_update
+                            165       
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 4.
+Hexadecimal [16-Bits]
+
+
+
+   0077 CD 00 00      [17]  166       call _man_entityUpdate
+   007A CD 8E 00      [17]  167       call _wait
+   007D 18 EC         [12]  168    jr updates
+                            169 
+   007F C9            [10]  170 ret
+                            171 
+                            172 ;===================================================================================================================================================
+                            173 ; FUNCION _m_game_createEnemy   
+                            174 ; Crea un enemigo
+                            175 ; NO llega ningun dato
+                            176 ;===================================================================================================================================================
+   0080                     177 _m_game_createEnemy::
+   0080 21 38 00      [10]  178    ld hl, #_enemyOnLane
+   0083 35            [11]  179    dec (hl)
+   0084 34            [11]  180    inc (hl)
+   0085 C0            [11]  181    ret NZ
+   0086 34            [11]  182    inc (hl)
+                            183 
+                            184    ; Create Enemy
+   0087 01 0E 00      [10]  185    ld bc, #_enemy_template_e   
+   008A CD 39 00      [17]  186    call _m_game_createInitTemplate   
+                            187    
+   008D C9            [10]  188    ret
+                            189 
+                            190 ;===================================================================================================================================================
+                            191 ; FUNCION _wait   
+                            192 ; Espera un tiempo antes de realizar otra iteracion del bucle de juego
+                            193 ; NO llega ningun dato
+                            194 ;===================================================================================================================================================
+                            195 
+   008E                     196 _wait::
+   008E 26 05         [ 7]  197    ld h, #0x05
+   0090                     198       waitLoop:
+   0090 06 02         [ 7]  199          ld b, #0x02
+   0092 CD 00 00      [17]  200          call cpct_waitHalts_asm
+   0095 CD 00 00      [17]  201          call cpct_waitVSYNC_asm
+   0098 25            [ 4]  202          dec h
+   0099 20 F5         [12]  203          jr NZ, waitLoop
+   009B C9            [10]  204    ret

@@ -1,0 +1,28 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+    _m_functionMemory                                              **** GX
+    _m_matchedEntity                                               **** GX
+    _man_entityForAllMatching                                      **** GX
+  0 _sys_init_render                                               0000 GR
+  0 _sys_render_renderOneEntity                                    0021 GR
+  0 _sys_render_update                                             0012 GR
+    cpct_drawSprite_asm                                            **** GX
+    cpct_getScreenPtr_asm                                          **** GX
+    cpct_setPALColour_asm                                          **** GX
+    cpct_setVideoMode_asm                                          **** GX
+  0 noRender                                                       0049 GR
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   4A   flags    0
+

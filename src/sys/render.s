@@ -1,17 +1,29 @@
-.globl _man_entityForAll
-.globl _m_functionMemory
+;===================================================================================================================================================
+; CPCTelera functions
+;===================================================================================================================================================
 .globl cpct_getScreenPtr_asm
 .globl cpct_setVideoMode_asm
 .globl cpct_setPALColour_asm
-.globl cpct_disableFirmware_asm
+.globl cpct_drawSprite_asm
+
+;===================================================================================================================================================
+; Public functions
+;===================================================================================================================================================
+.globl _man_entityForAllMatching
+
+;===================================================================================================================================================
+; Public data
+;===================================================================================================================================================
+.globl _m_functionMemory
+.globl _m_matchedEntity
 
 
-
-;;
-;; Metodo que inicializa el render con cpc_telera
-;;
+;===================================================================================================================================================
+; FUNCION _sys_init_render
+; Se encarga de iniciar el color y el modo de video de Amstrad(?)
+; NO llega ningun dato
+;===================================================================================================================================================
 _sys_init_render::
-   call	cpct_disableFirmware_asm
    ;;Destroyed : HL 
    ld    c,#0x00
    call  cpct_setVideoMode_asm
@@ -25,58 +37,33 @@ _sys_init_render::
    ;;Destroyed : F & BC & HL  
    ret
 
-;;
-;; Llama a la inversión de control para renderizar cada entidad
-;;
+;===================================================================================================================================================
+; FUNCION _sys_render_update
+; Llama a la inversión de control para renderizar los sprites de cada entidad que coincida con e_type_render
+; NO llega ningun dato
+;===================================================================================================================================================
 _sys_render_update::
     ld hl, #_sys_render_renderOneEntity
     ld (_m_functionMemory), hl
-    call _man_entityForAll
+    ld hl , #_m_matchedEntity 
+    ld (hl), #0x01   ; e_type_render
+    call _man_entityForAllMatching
     ret
 
 
-
-;;
-;; Renderiza cada entity en su nueva posición y borra el frame anterior
-;;
-_sys_render_renderOneEntity:: ;;TODO : Cambiar el render con los prevptr
-    ;Buscamos en la entidad su antigua posición en la mem. de video
-    ;para borrarla
-    ld a, #0x05
-    searchPrevPTR:
-        inc hl
-        dec a
-        jr NZ, searchPrevPTR
-
-    dec (hl)
-    inc (hl)
-    jr Z,noDelete
-    
-    ld c, (hl)
-    inc hl
-    ld b, (hl)
-    dec hl
-    push hl
-
-    ld h, b
-    ld l, c
-    
-    ld (hl), #0x00
-    pop hl
-    noDelete:
-
-    ;Comprobamos con el tipo de la entidad si tenemos que renderizarla o no
-    ld a, #0x05
-    searchType:
-        dec hl
-        dec a
-        jr NZ, searchType
-
+;===================================================================================================================================================
+; FUNCION _sys_render_renderOneEntity
+; Renderiza los sprites de las entidades renderizables
+; HL : Entidad a renderizar
+;===================================================================================================================================================
+_sys_render_renderOneEntity:: ;;TODO : Ver de hacer esto con el reg IX
+    ;; Si es una entidad marcada para destruir no se renderiza
     ld a, (hl)
-    and #0x80
+    and #0x80    
     jr NZ, noRender
 
-
+    ;; Conseguimos la direccion de memoria donde dibujar con las pos de la entity
+    push hl
     push hl
     ld de, #0xC000
     inc hl
@@ -84,29 +71,30 @@ _sys_render_renderOneEntity:: ;;TODO : Cambiar el render con los prevptr
     inc hl
     ld b,(hl)
     call cpct_getScreenPtr_asm
-    ld (hl), #0x88
+    
+    ;; Con la direccion de memoria dibujamos el sprite de la entidad 
     ld e, l
     ld d, h
     pop hl
-
-    ;En caso de renderizar se guarda en la entidad la nueva posicion de video
-    ;para borrarla en la siguiente iteracion
-    ld a, #0x05
-    searchPrevPTR2:
-        inc hl
-        dec a
-        jr NZ, searchPrevPTR2
-    
-    ld (hl), e
     inc hl
-    ld (hl),d
+    inc hl
+    inc hl
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl
+    inc hl
+    inc hl
+    ld a,(hl)
+    push af
+    inc hl
+    ld a,(hl)
+    ld h,a
+    pop af
+    ld l,a
 
-    ld a, #0x06
-    backToStartOfTheStar:
-        dec hl
-        dec a
-        jr NZ, backToStartOfTheStar
-
+    call cpct_drawSprite_asm
+    pop hl
     noRender:
 
     ret

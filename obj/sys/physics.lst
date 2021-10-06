@@ -1,0 +1,142 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;===================================================================================================================================================
+                              2 ; CPCTelera functions
+                              3 ;===================================================================================================================================================
+                              4 .globl cpct_scanKeyboard_f_asm
+                              5 .globl cpct_isKeyPressed_asm
+                              6 
+                              7 ;===================================================================================================================================================
+                              8 ; Public functions
+                              9 ;===================================================================================================================================================
+                             10 .globl _man_entityForAllMatching
+                             11 .globl _man_entityDestroy
+                             12 .globl _man_setEntity4Destroy
+                             13 
+                             14 ;===================================================================================================================================================
+                             15 ; Public data
+                             16 ;===================================================================================================================================================
+                             17 .globl _m_functionMemory
+                             18 .globl _m_matchedEntity
+                             19 
+                             20 ;===================================================================================================================================================
+                             21 ; FUNCION _sys_physics_update
+                             22 ; Llama a la inversión de control para updatear las fisicas de cada entidad que coincida con e_type_movable
+                             23 ; NO llega ningun dato
+                             24 ;===================================================================================================================================================
+   0000                      25 _sys_physics_update::
+   0000 21 38 00      [10]   26     ld hl, #_sys_physics_updateOneEntity
+   0003 22 00 00      [16]   27     ld (_m_functionMemory), hl
+   0006 21 00 00      [10]   28     ld hl , #_m_matchedEntity 
+   0009 36 02         [10]   29     ld (hl), #0x02  ; e_type_movable
+   000B CD 00 00      [17]   30     call _man_entityForAllMatching
+   000E C9            [10]   31     ret
+                             32 
+                             33 
+                             34 ;;
+                             35 ;; Hace los calculos de la posicion de las entidades con la velocidad de cada entidad
+                             36 ;;
+                             37 
+                             38 
+                             39 ;===================================================================================================================================================
+                             40 ; FUNCION _sys_physics_checkKeyboard
+                             41 ; Cambia el valor de la velocidad en x si se pulsa la tecla : O o P
+                             42 ; HL : LA entidad a updatear
+                             43 ;===================================================================================================================================================
+   000F                      44 _sys_physics_checkKeyboard::
+   000F 23            [ 6]   45     inc hl
+   0010 23            [ 6]   46     inc hl
+   0011 23            [ 6]   47     inc hl
+   0012 23            [ 6]   48     inc hl
+   0013 23            [ 6]   49     inc hl
+   0014 E5            [11]   50     push hl
+                             51 
+   0015 CD 00 00      [17]   52     call cpct_scanKeyboard_f_asm
+                             53     
+   0018 21 04 04      [10]   54     ld hl, #0x0404  ;;Key O
+   001B CD 00 00      [17]   55     call cpct_isKeyPressed_asm
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+   001E 20 0E         [12]   56     jr NZ, leftPressed
+                             57 
+   0020 21 03 08      [10]   58     ld hl, #0x0803 ;;Key P
+   0023 CD 00 00      [17]   59     call cpct_isKeyPressed_asm
+   0026 20 0C         [12]   60     jr NZ, rightPressed
+                             61 
+   0028 E1            [10]   62     pop hl
+   0029 36 00         [10]   63     ld (hl), #0x00
+                             64 
+   002B C3 37 00      [10]   65     jp stopCheck
+   002E                      66     leftPressed:
+                             67         
+   002E E1            [10]   68         pop hl
+   002F 36 FF         [10]   69         ld (hl), #0xFF
+   0031 C3 37 00      [10]   70         jp stopCheck
+   0034                      71     rightPressed:
+   0034 E1            [10]   72         pop hl
+   0035 36 01         [10]   73         ld (hl), #0x01
+                             74 
+   0037                      75     stopCheck:
+   0037 C9            [10]   76     ret
+                             77 
+                             78 
+                             79 
+                             80 
+                             81 
+                             82 ;===================================================================================================================================================
+                             83 ; FUNCION _sys_physics_updateOneEntity
+                             84 ; Updatea las posiciones de las entidades en funcion de 
+                             85 ; los valores de sus velocidades
+                             86 ; HL : Entidad a updatear
+                             87 ;===================================================================================================================================================
+   0038                      88 _sys_physics_updateOneEntity::    
+   0038 E5            [11]   89     push hl
+   0039 7E            [ 7]   90     ld a,(hl)
+   003A E6 04         [ 7]   91     and #0x04
+   003C 44            [ 4]   92     ld b,h
+   003D 4D            [ 4]   93     ld c,l
+   003E 28 03         [12]   94     jr Z,noInput
+   0040 CD 0F 00      [17]   95     call _sys_physics_checkKeyboard
+   0043                      96     noInput:
+   0043 E1            [10]   97     pop hl
+                             98 
+   0044 23            [ 6]   99     inc hl
+   0045 46            [ 7]  100     ld  b,(hl) ; posX
+   0046 23            [ 6]  101     inc hl
+   0047 56            [ 7]  102     ld  d,(hl) ; posY 
+                            103 
+   0048 23            [ 6]  104     inc hl
+   0049 23            [ 6]  105     inc hl
+   004A 23            [ 6]  106     inc hl
+   004B 4E            [ 7]  107     ld c,(hl) ; velX
+   004C 23            [ 6]  108     inc hl
+   004D 5E            [ 7]  109     ld e,(hl) ; vely
+                            110 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+   004E 3E 05         [ 7]  111     ld a, #0x05
+   0050                     112     setHLposX:
+   0050 2B            [ 6]  113         dec hl
+   0051 3D            [ 4]  114         dec a
+   0052 20 FC         [12]  115         jr NZ, setHLposX
+                            116 
+   0054 78            [ 4]  117     ld a,b
+   0055 81            [ 4]  118     add a,c
+   0056 77            [ 7]  119     ld (hl),a
+                            120 
+   0057 23            [ 6]  121     inc hl
+                            122     
+   0058 7A            [ 4]  123     ld a,d
+   0059 83            [ 4]  124     add a,e
+   005A 77            [ 7]  125     ld (hl),a
+                            126     
+   005B C9            [10]  127    ret

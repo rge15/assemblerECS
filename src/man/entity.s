@@ -1,11 +1,27 @@
 .globl cpct_memset_asm
 .globl cpct_memcpy_asm
-.globl _sys_physics_updateOneEntity
 
+
+;===================================================================================================================================================
+; Entity types   
+;===================================================================================================================================================
+; #define e_type_invalid  0x00
+; #define e_type_render   0x01
+; #define e_type_movable  0x02
+; #define e_type_input    0x04
+; #define e_type_ai       0x08
+; #define e_type_animated 0x10
+; #define e_type_default  0x7F
+; #define e_type_dead     0x80
+
+
+;===================================================================================================================================================
+; Manager data   
+;===================================================================================================================================================
 
 ;; Array de entidades
 _m_entities::
-    .ds 140
+    .ds 84
 
 ;; Memoria vacia al final del array para controlar su final
 _m_emptyMemCheck::
@@ -19,19 +35,25 @@ _m_next_free_entity::
 _m_functionMemory::
     .ds 2
 
-;; Numero de entidades creadas
-_m_numEntities::
+_m_matchedEntity::
     .ds 1
 
-;;
-;; Iniciamos las entidades y sus valores iniciales
-;;
+;; Numero de entidades creadas
+_m_numEntities::
+    .ds 6
+
+
+;===================================================================================================================================================
+; FUNCION _man_entityInit   
+; Inicializa el manager de entidades y sus datos
+; NO llega ningun dato
+;===================================================================================================================================================
 _man_entityInit::
     ld  DE, #_m_entities
     ld  A,  #0x00
     ld  (_m_emptyMemCheck), a
     ld  (_m_numEntities), a
-    ld  BC, #0x008C
+    ld  BC, #0x0054
     call    cpct_memset_asm
     ;;Destroyed: AF & BC & DE & HL
     
@@ -41,12 +63,15 @@ _man_entityInit::
     ret
 
 
-;;
-;; Crea una entidad
-;;
+;===================================================================================================================================================
+; FUNCION _man_createEntity   
+; Crea una entidad
+; NO llega ningun dato
+;===================================================================================================================================================
 _man_createEntity::
     ld  de, (_m_next_free_entity)
-    ld  hl, #0x0007
+    ld  h, #0x00
+    ld  l, #0x0E
     add hl,de
     ld  (_m_next_free_entity),hl
     ld  hl, #_m_numEntities
@@ -56,60 +81,88 @@ _man_createEntity::
     ld  (hl), #0x7F
     ret
 
-;;
-;; Ejecuta la funcion de _m_functionMemory por cada entidad valida
-;;
-_man_entityForAll::
+
+
+;===================================================================================================================================================
+; FUNCION _man_entityForAllMatching
+; Ejecuta la funcion  de _m_functionMemory por cada entidad que cumpla con el tipo designado en  _m_matchedEntity
+; NO llega ningun dato
+;===================================================================================================================================================
+_man_entityForAllMatching::
     ld  hl, #_m_entities
+    
     ld  a,(hl)
+    
     or a,a
     ret Z
-    not_invalid:
-        ld ix, #next_entity
+    push hl
+    jp checkSignature
+    not_invalid2:
+        pop hl
+        push hl
+        ld ix, #next_entity2
         push ix
 
         ld ix, (#_m_functionMemory)
         jp (ix)
 
-        next_entity:
-        ld  c,#0x07
+        next_entity2:
+        pop hl
+        ld  c,#0x0E
         ld  b,#0x00
 
         add hl,bc
-
+        push hl
         ld  a,(hl)
         or a,a 
-        jr  NZ, not_invalid
+        jr  Z, allDone
+        checkSignature:
+        ld a,(#_m_matchedEntity)
+        and (hl)
+        ld hl , #_m_matchedEntity
+        sub (hl)
+        jr Z, not_invalid2
+        jp next_entity2
+    allDone:
+    pop hl
     ret
 
 
-;;
-;; Marca a la entidad para ser destruida
-;;
+;===================================================================================================================================================
+; FUNCION _man_setEntity4Destroy
+; Establece la entidad para ser destruida
+; HL : La entidad para ser marcada
+;===================================================================================================================================================
 _man_setEntity4Destroy::
     ld a, #0x80
     or (hl)
     ld (hl),a
 ret
 
-;;
-;; Destruye la entidad que llega en el registro HL
-;; Prerequisitos -> Cargar en HL la entidad a destruir (e)
-;;
+;===================================================================================================================================================
+; FUNCION _man_entityDestroy
+; Elimina de las entidades la entidad de HL y arregla el array de entidades 
+; para establecer la ultima entidad al espacio liberado por la entidad destruida 
+; HL : La entidad para ser destruida
+;===================================================================================================================================================
 _man_entityDestroy::
     ld de, (#_m_next_free_entity)
     ex de, hl
     ;; HL = _m_next_free_entity
     ;; DE = entity to destroy
 
-    ld a, #0x07
+
+    ;; Buscamos la ultima entidad
+    ld a, #0x0E
     setLast:
         dec hl
         dec a
         jr NZ, setLast
     ;; de = e && hl = last
 
-    ; if( e != last)
+
+    ;;Comprobamos que la ultima entidad libre y la entidad a destruir no sea la misma
+    ;;if( e != last)
     ld a, e
     sub l
     jr Z, checkMemory
@@ -120,24 +173,27 @@ _man_entityDestroy::
     sub h
     jr Z, no_copy 
 
+    ;;Si no es la misma copiamos la ultima entidad al espacio de la entidad a destruir
     copy:
-
     ; cpct_memcpy(e,last,sizeof(Entity_t));
-    ld bc, #0x0007
+    ld b, #0x00
+    ld c, #0x0E
     call cpct_memcpy_asm
 
-    ; Volvemos a asignar a hl el valor de la ultima entity
+    ;;Volvemos a asignar a hl el valor de la ultima entity
     ld hl, #_m_next_free_entity
-    ld a, #0x07
+    ld a, #0x0E
     setLast2:
         dec hl
         dec a
         jr NZ, setLast2
 
+
+    ;;Aquí liberamos el ultimo espacio del array de entidades y lo seteamos como el proximo espacio libre 
     no_copy:
-    ;  last->type = e_type_invalid;
+    ;last->type = e_type_invalid;
     ld (hl),#0x00
-    ;    m_next_free_entity = last;
+    ;m_next_free_entity = last;
     ld de, #_m_next_free_entity
     ex de, hl
     ld (hl), e
@@ -149,16 +205,18 @@ _man_entityDestroy::
     ret
 
 
-;;
-;; Se encarga de destruir todas las entidades marcadas para ser destruidas
-;;
+;===================================================================================================================================================
+; FUNCION _man_entityUpdate
+; Recorre todas las entidades y destruye las entidades marcadas
+; NO llega ningun dato 
+;===================================================================================================================================================
 _man_entityUpdate::
     ld hl, #_m_entities
 
     inc (hl)
     dec (hl)
     ret Z 
-    ld c, #0x07
+    ld c, #0x0E
     ld b, #0x00    
     ld a, #0x80    
     valid:
@@ -178,12 +236,14 @@ _man_entityUpdate::
     ret
 
 
-;;
-;; Metodo que devuelve en el reg. A el espacio restante para generar entidades
-;;
+;===================================================================================================================================================
+; FUNCION _man_entity_freeSpace
+; Devuelve en a si hay espacio libre en las entidades para poder generar
+; NO llega ningun dato 
+;===================================================================================================================================================
 _man_entity_freeSpace::
         ld hl, #_m_numEntities
-        ld a, #0x14
+        ld a, #0x06
         sub (hl)
     ret
 

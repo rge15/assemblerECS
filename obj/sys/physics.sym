@@ -1,0 +1,33 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+    _m_functionMemory                                              **** GX
+    _m_matchedEntity                                               **** GX
+    _man_entityDestroy                                             **** GX
+    _man_entityForAllMatching                                      **** GX
+    _man_setEntity4Destroy                                         **** GX
+  0 _sys_physics_checkKeyboard                                     000F GR
+  0 _sys_physics_update                                            0000 GR
+  0 _sys_physics_updateOneEntity                                   0038 GR
+    cpct_isKeyPressed_asm                                          **** GX
+    cpct_scanKeyboard_f_asm                                        **** GX
+  0 leftPressed                                                    002E GR
+  0 noInput                                                        0043 GR
+  0 rightPressed                                                   0034 GR
+  0 setHLposX                                                      0050 GR
+  0 stopCheck                                                      0037 GR
+
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   5C   flags    0
+

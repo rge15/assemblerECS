@@ -1,47 +1,127 @@
-.globl _man_entityForAll
+;===================================================================================================================================================
+; CPCTelera functions
+;===================================================================================================================================================
+.globl cpct_scanKeyboard_f_asm
+.globl cpct_isKeyPressed_asm
+
+;===================================================================================================================================================
+; Public functions
+;===================================================================================================================================================
+.globl _man_entityForAllMatching
 .globl _man_entityDestroy
-.globl _m_functionMemory
 .globl _man_setEntity4Destroy
 
-;;
-;; Llama a la inversión de control para updatear las fisicas de cada entidad
-;;
+;===================================================================================================================================================
+; Public data
+;===================================================================================================================================================
+.globl _m_functionMemory
+.globl _m_matchedEntity
+
+;===================================================================================================================================================
+; FUNCION _sys_physics_update
+; Llama a la inversión de control para updatear las fisicas de cada entidad que coincida con e_type_movable
+; NO llega ningun dato
+;===================================================================================================================================================
 _sys_physics_update::
     ld hl, #_sys_physics_updateOneEntity
     ld (_m_functionMemory), hl
-    call _man_entityForAll
+    ld hl , #_m_matchedEntity 
+    ld (hl), #0x02  ; e_type_movable
+    call _man_entityForAllMatching
     ret
 
 
 ;;
 ;; Hace los calculos de la posicion de las entidades con la velocidad de cada entidad
 ;;
-_sys_physics_updateOneEntity::    
-;Preparo los dos valores para ser restados,
-;si hay acarreo , el newx es mayor que e->x
-    ld  d,h
-    ld  e,l 
+
+
+;===================================================================================================================================================
+; FUNCION _sys_physics_checkKeyboard
+; Cambia el valor de la velocidad en x si se pulsa la tecla : O o P
+; HL : LA entidad a updatear
+;===================================================================================================================================================
+_sys_physics_checkKeyboard::
     inc hl
-    ld  a,(hl)
     inc hl
     inc hl
-    add a,(hl) ; a = newx
+    inc hl
+    inc hl
+    push hl
+
+    call cpct_scanKeyboard_f_asm
     
-    dec hl
-    dec hl
-    push af
-    add a, (hl)
-    pop af
+    ld hl, #0x0404  ;;Key O
+    call cpct_isKeyPressed_asm
+    jr NZ, leftPressed
 
-    ;; e->x = newx;
-    ld (hl), a
-    ld h, d
-    ld l, e 
+    ld hl, #0x0803 ;;Key P
+    call cpct_isKeyPressed_asm
+    jr NZ, rightPressed
 
-    ;Si el resultado de la suma se pasa de 255 acarrea y por lo tanto se debe destuir
-    ;y se marca para destruirse
-    jr NC, destroy
+    pop hl
+    ld (hl), #0x00
+
+    jp stopCheck
+    leftPressed:
+        
+        pop hl
+        ld (hl), #0xFF
+        jp stopCheck
+    rightPressed:
+        pop hl
+        ld (hl), #0x01
+
+    stopCheck:
     ret
-    destroy:
-        call _man_setEntity4Destroy
-    ret
+
+
+
+
+
+;===================================================================================================================================================
+; FUNCION _sys_physics_updateOneEntity
+; Updatea las posiciones de las entidades en funcion de 
+; los valores de sus velocidades
+; HL : Entidad a updatear
+;===================================================================================================================================================
+_sys_physics_updateOneEntity::    
+    push hl
+    ld a,(hl)
+    and #0x04
+    ld b,h
+    ld c,l
+    jr Z,noInput
+    call _sys_physics_checkKeyboard
+    noInput:
+    pop hl
+
+    inc hl
+    ld  b,(hl) ; posX
+    inc hl
+    ld  d,(hl) ; posY 
+
+    inc hl
+    inc hl
+    inc hl
+    ld c,(hl) ; velX
+    inc hl
+    ld e,(hl) ; vely
+
+    ld a, #0x05
+    setHLposX:
+        dec hl
+        dec a
+        jr NZ, setHLposX
+
+    ld a,b
+    add a,c
+    ld (hl),a
+
+    inc hl
+    
+    ld a,d
+    add a,e
+    ld (hl),a
+    
+   ret

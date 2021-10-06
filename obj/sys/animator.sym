@@ -1,0 +1,28 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+    _m_functionMemory                                              **** GX
+    _m_matchedEntity                                               **** GX
+  0 _man_anim_player                                               0000 GR
+    _man_entityForAllMatching                                      **** GX
+    _sprite_player01                                               **** GX
+    _sprite_player02                                               **** GX
+  0 _sys_animator_update                                           0009 GR
+  0 _sys_animator_updateOneEntity                                  0018 GR
+  0 noRepeatAnim                                                   003A GR
+  0 searchCounter                                                  001A GR
+
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   52   flags    0
+

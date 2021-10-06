@@ -10,53 +10,22 @@
 
 .area _CODE
 
-.globl cpct_getScreenPtr_asm
-.globl cpct_setDrawCharM1_asm
-.globl cpct_drawStringM1_asm
-.globl cpct_memcpy_asm
-.globl cpct_waitHalts_asm
-.globl cpct_waitVSYNC_asm
+.globl cpct_disableFirmware_asm
 ;;
 ;; Métodos globales 
 ;;
-.globl _man_entityInit
-.globl _man_createEntity
-.globl _sys_physics_update
-.globl _sys_render_update
-.globl _sys_init_render
-.globl _man_entityUpdate
-.globl _sys_gen_update
-
+.globl _m_game_init 
+.globl _m_game_play
 
 ;;
 ;;MAIN
 ;;
 _main::
-   call _sys_init_render
+   call	cpct_disableFirmware_asm
 
-   call  _man_entityInit
-   ;;Destroyed : A & BC & DE && HL
-   updates:
-      call _sys_physics_update
-      call _sys_gen_update    
-      call _sys_render_update
-      
-      call _man_entityUpdate
-      call _wait
-   jr updates
+   call _m_game_init
+   call _m_game_play
 
 
 
 
-; ;
-; ;WAIT
-; ;
-_wait::
-   ld h, #0x05
-      waitLoop:
-         ld b, #0x02
-         call cpct_waitHalts_asm
-         call cpct_waitVSYNC_asm
-         dec h
-         jr NZ, waitLoop
-   ret
