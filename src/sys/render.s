@@ -67,6 +67,7 @@ _sys_render_renderOneEntity:: ;;TODO : Ver de hacer esto con el reg IX
     push hl
     ld de, #0xC000
     inc hl
+    inc hl
     ld c,(hl)
     inc hl
     ld b,(hl)
@@ -79,9 +80,10 @@ _sys_render_renderOneEntity:: ;;TODO : Ver de hacer esto con el reg IX
     inc hl
     inc hl
     inc hl
-    ld c,(hl)
     inc hl
-    ld b,(hl)
+    ld c,(hl) ;Cargamos el width
+    inc hl
+    ld b,(hl) ;Cargamos el height
     inc hl
     inc hl
     inc hl

@@ -7,15 +7,13 @@
 
 
 ;===================================================================================================================================================
-; Public data
+; Sprites
 ;===================================================================================================================================================
-;;Sprites
 .globl _sprite_player01
 .globl _sprite_player02
 
-
 ;===================================================================================================================================================
-; Manager data
+; Animations
 ;===================================================================================================================================================
 _man_anim_player:
     .db #0x0A
@@ -50,7 +48,7 @@ _sys_animator_update::
 ;===================================================================================================================================================
 _sys_animator_updateOneEntity::    
 
-    ld a,#0x0D
+    ld a,#0x0F
     searchCounter:
         inc hl
         dec a
@@ -85,7 +83,7 @@ _sys_animator_updateOneEntity::
     jr NZ, noRepeatAnim
 
     ; Aqui HL llega apuntando al tiempo de la nueva anim
-    ; AQui hay q hacer una cosas setear la animacion (direccion del sprite de inicio)
+    ; Aqui hay q hacer una cosas setear la animacion (direccion del sprite de inicio)
     push de
     inc hl
     ld e, (hl)
@@ -112,6 +110,7 @@ _sys_animator_updateOneEntity::
     ex de, hl
     ld (hl),a
     ;;Seteado el tiempo en la entity
+    dec hl
     dec hl
     dec hl
     dec hl

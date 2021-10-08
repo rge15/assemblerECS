@@ -1,0 +1,33 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+  0 _enemy_template_e                                              0010 GR
+    _man_anim_player                                               **** GX
+  0 _mothership_template_e                                         0000 GR
+  0 _playerLife_template_e                                         0030 GR
+  0 _player_template_e                                             0040 GR
+  0 _shot_template_e                                               0020 GR
+    _sprite_enemy                                                  **** GX
+    _sprite_mothership                                             **** GX
+    _sprite_player01                                               **** GX
+    _sprite_player02                                               **** GX
+    _sprite_shot                                                   **** GX
+    _sys_ai_behaviourAutoDestroy                                   **** GX
+    _sys_ai_behaviourEnemy                                         **** GX
+    _sys_ai_behaviourLeftRight                                     **** GX
+    _sys_ai_behaviourMothership                                    **** GX
+
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   50   flags    0
+

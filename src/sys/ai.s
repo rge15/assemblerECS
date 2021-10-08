@@ -9,6 +9,7 @@
 ;===================================================================================================================================================
 .globl _man_entityForAllMatching
 .globl _m_game_createEnemy
+.globl _m_game_destroyEntity
 
 .globl _m_functionMemory
 .globl _m_matchedEntity
@@ -41,7 +42,7 @@ _sys_ai_update::
 ;===================================================================================================================================================
 _sys_ai_updateOneEntity::    
     ; ex de, hl
-    ld a,#0x09
+    ld a,#0x0A
     searchBehaviour:
         inc hl
         dec a
@@ -64,11 +65,11 @@ _sys_ai_updateOneEntity::
     ld (hl),a
     pop hl
 
-    ld a,#0x09
-    searchType:
+    ld a,#0x0A
+    searchEntityType:
         dec hl
         dec a
-        jr NZ, searchType
+        jr NZ, searchEntityType
 
     ld ix, (#_sys_ai_behaviourMemory)
     jp (ix)
@@ -89,7 +90,9 @@ _sys_ai_behaviourMothership::
 
     ;;Si esta en x=20(decimal) intenta crear un enemigo
     inc hl
+    inc hl
     ld a,(hl)
+    dec hl
     dec hl
     sub #0x14
     jr NZ,notCreateEnemy
@@ -102,12 +105,42 @@ _sys_ai_behaviourMothership::
 
 
 ;===================================================================================================================================================
+; FUNCION _sys_ai_behaviourEnemy
+; Comportamiento de la MotherShip
+; 1º Intenta crear un enemigo hijo
+; 2º Se mueve de derecha a izquierda hasta los bordes
+; HL : Entidad a updatear
+;===================================================================================================================================================
+_sys_ai_behaviourEnemy::
+
+    ;; TODO : IA del enemigo , no la hago por aprovechar tiempo 
+    ; inc hl
+    ; ld a,(hl)
+    ; dec hl
+    
+    ; sub #0x07
+    ; jr NZ,notTryDown
+
+    ; push hl
+    ; call _m_game_tryDownEnemy
+    ; pop hl 
+    ; notTryDown:
+
+    call _sys_ai_behaviourLeftRight
+
+    ret
+
+
+
+
+;===================================================================================================================================================
 ; FUNCION _sys_ai_behaviourLeftRight
 ; Si llega a alguno de los bordes establece su velocidad en la direccion contraria
 ; HL : Entidad a updatear
 ;===================================================================================================================================================
 _sys_ai_behaviourLeftRight::
     ld a, #0x50
+    inc hl
     inc hl
     ld b,(hl) ;; b = x
     inc hl
@@ -135,4 +168,34 @@ _sys_ai_behaviourLeftRight::
         ld (hl), #0xFF
 
     exitUpdate:
+    ret
+
+
+
+;===================================================================================================================================================
+; FUNCION _sys_ai_behaviourAutoDestroy
+; Destruye la entidad pasado el tiempo del contador de la IA
+; HL : Entidad a updatear
+;===================================================================================================================================================
+
+_sys_ai_behaviourAutoDestroy::
+    ld a,#0x0C
+    searchAICounter:
+        inc hl
+        dec a
+        jr NZ, searchAICounter
+    
+    dec (hl)
+    jr NZ, dontDestroy
+    
+    ld a,#0x0C
+    searchType:
+        dec hl
+        dec a
+        jr NZ, searchType
+
+    call _m_game_destroyEntity
+    
+    dontDestroy:
+    
     ret

@@ -1,0 +1,143 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;===================================================================================================================================================
+                              2 ; Public functions
+                              3 ;===================================================================================================================================================
+                              4 .globl _man_entityForAllMatching
+                              5 .globl _m_functionMemory
+                              6 .globl _m_matchedEntity
+                              7 
+                              8 
+                              9 ;===================================================================================================================================================
+                             10 ; Sprites
+                             11 ;===================================================================================================================================================
+                             12 .globl _sprite_player01
+                             13 .globl _sprite_player02
+                             14 
+                             15 ;===================================================================================================================================================
+                             16 ; Animations
+                             17 ;===================================================================================================================================================
+   0000                      18 _man_anim_player:
+   0000 0A                   19     .db #0x0A
+   0001 00 00                20     .dw #_sprite_player01
+   0003 0A                   21     .db #0x0A
+   0004 00 00                22     .dw #_sprite_player02
+   0006 00                   23     .db #0x00
+   0007 00 00                24     .dw #_man_anim_player
+                             25 
+                             26 ;===================================================================================================================================================
+                             27 ; FUNCION _sys_animator_update   
+                             28 ; Llama a la inversión de control para updatear las animaciones de cada entidad que coincida con e_type_animator
+                             29 ; NO llega ningun dato
+                             30 ;===================================================================================================================================================
+   0009                      31 _sys_animator_update::
+   0009 21 18 00      [10]   32     ld hl, #_sys_animator_updateOneEntity
+   000C 22 00 00      [16]   33     ld (_m_functionMemory), hl
+   000F 21 00 00      [10]   34     ld hl , #_m_matchedEntity 
+   0012 36 10         [10]   35     ld (hl), #0x10  ; e_type_animator
+   0014 CD 00 00      [17]   36     call _man_entityForAllMatching
+   0017 C9            [10]   37     ret
+                             38 
+                             39 
+                             40 
+                             41 ;===================================================================================================================================================
+                             42 ; FUNCION _sys_animator_updateOneEntity   
+                             43 ; Si toca cambiar el sprite de la animacion establece el siguiente sprite como el nuevo y,
+                             44 ; pone tambien el counter de la animacion con la duración del nuevo sprite.
+                             45 ; En caso de que no haya sprite y sea la dirección de memoria de la animacion, 
+                             46 ; resetea la animación y establece los datos como el paso descrito antes.
+                             47 ; HL : Entidad a updatear
+                             48 ;===================================================================================================================================================
+   0018                      49 _sys_animator_updateOneEntity::    
+                             50 
+   0018 3E 0F         [ 7]   51     ld a,#0x0F
+   001A                      52     searchCounter:
+   001A 23            [ 6]   53         inc hl
+   001B 3D            [ 4]   54         dec a
+   001C 20 FC         [12]   55         jr NZ, searchCounter
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+                             56     
+   001E 35            [11]   57     dec (hl)
+   001F C0            [11]   58     ret NZ
+                             59 
+                             60     ;; TODO : Aqui me falta asignar en la entidad la siguiente anim 
+                             61 
+   0020 2B            [ 6]   62     dec hl
+   0021 56            [ 7]   63     ld d,(hl)
+   0022 2B            [ 6]   64     dec hl
+   0023 5E            [ 7]   65     ld e,(hl)
+                             66 
+   0024 13            [ 6]   67     inc de
+   0025 13            [ 6]   68     inc de
+   0026 13            [ 6]   69     inc de
+                             70 
+   0027 73            [ 7]   71     ld (hl), e
+   0028 23            [ 6]   72     inc hl
+   0029 72            [ 7]   73     ld (hl), d
+   002A 2B            [ 6]   74     dec hl
+                             75 
+   002B EB            [ 4]   76     ex de,hl 
+                             77     ;HL tiene la direccion de la anim
+                             78     ;Aqui HL llega apuntando al tiempo de la animacion en memoria 
+                             79     ;DE tiene la primera posicion de la animacion de la memoria de entity
+   002C D5            [11]   80     push de
+   002D 35            [11]   81     dec (hl)
+   002E 34            [11]   82     inc (hl)
+   002F 20 09         [12]   83     jr NZ, noRepeatAnim
+                             84 
+                             85     ; Aqui HL llega apuntando al tiempo de la nueva anim
+                             86     ; Aqui hay q hacer una cosas setear la animacion (direccion del sprite de inicio)
+   0031 D5            [11]   87     push de
+   0032 23            [ 6]   88     inc hl
+   0033 5E            [ 7]   89     ld e, (hl)
+   0034 23            [ 6]   90     inc hl
+   0035 56            [ 7]   91     ld d, (hl)
+   0036 E1            [10]   92     pop hl
+   0037 73            [ 7]   93     ld (hl),e
+   0038 23            [ 6]   94     inc hl
+   0039 72            [ 7]   95     ld (hl),d
+                             96     ;;AQui ya está en la Entity asignado el inicio de la anim
+                             97 
+   003A                      98     noRepeatAnim:
+   003A E1            [10]   99     pop hl   ;;Aqui en HL está el inicio de la animacion en la memoria de la entity
+   003B 5E            [ 7]  100     ld e,(hl)
+   003C 23            [ 6]  101     inc hl
+   003D 56            [ 7]  102     ld d,(hl)
+   003E 23            [ 6]  103     inc hl
+   003F EB            [ 4]  104     ex de,hl ;;Aqui en HL está la direcion de memoria del tiempo nuevo en la anim
+                            105              ;;y en DE queda el counter del tiempo de la entity
+                            106 
+                            107     ; Aqui HL llega apuntando al tiempo de la nueva anim
+   0040 7E            [ 7]  108     ld a, (hl) ; a = newTIME
+   0041 23            [ 6]  109     inc hl
+   0042 EB            [ 4]  110     ex de, hl
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+   0043 77            [ 7]  111     ld (hl),a
+                            112     ;;Seteado el tiempo en la entity
+   0044 2B            [ 6]  113     dec hl
+   0045 2B            [ 6]  114     dec hl
+   0046 2B            [ 6]  115     dec hl
+   0047 2B            [ 6]  116     dec hl
+   0048 2B            [ 6]  117     dec hl
+   0049 2B            [ 6]  118     dec hl
+   004A EB            [ 4]  119     ex de, hl ; Tengo en HL el inicio del nuevo sprite en la anim
+   004B 4E            [ 7]  120     ld c,(hl)
+   004C 23            [ 6]  121     inc hl
+   004D 46            [ 7]  122     ld b,(hl)
+   004E EB            [ 4]  123     ex de, hl ;Tengo en BC el nuevo sprite, y en HL el segundo Byte del sprite de la entity
+   004F 70            [ 7]  124     ld (hl), b
+   0050 2B            [ 6]  125     dec hl
+   0051 71            [ 7]  126     ld (hl),c
+                            127     
+   0052 C9            [10]  128    ret

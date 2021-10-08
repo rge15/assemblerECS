@@ -1,0 +1,49 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+  0 _enemyOnLane                                                   0000 GR
+    _enemy_template_e                                              **** GX
+  0 _m_game_createEnemy                                            0054 GR
+  0 _m_game_createInitTemplate                                     0004 GR
+  0 _m_game_destroyEntity                                          0062 GR
+  0 _m_game_init                                                   0013 GR
+  0 _m_game_play                                                   003F GR
+  0 _m_game_playerShot                                             0071 GR
+  0 _m_game_tryDownEnemy                                           0094 GR
+  0 _m_playerEntity                                                0002 GR
+  0 _m_playerShot                                                  0001 GR
+    _man_createEntity                                              **** GX
+    _man_entityDestroy                                             **** GX
+    _man_entityInit                                                **** GX
+    _man_entityUpdate                                              **** GX
+    _mothership_template_e                                         **** GX
+    _playerLife_template_e                                         **** GX
+    _player_template_e                                             **** GX
+    _shot_template_e                                               **** GX
+    _sys_ai_update                                                 **** GX
+    _sys_animator_update                                           **** GX
+    _sys_init_render                                               **** GX
+    _sys_physics_update                                            **** GX
+    _sys_render_update                                             **** GX
+  0 _wait                                                          0095 GR
+    cpct_memcpy_asm                                                **** GX
+    cpct_waitHalts_asm                                             **** GX
+    cpct_waitVSYNC_asm                                             **** GX
+  0 createLife                                                     0021 GR
+  0 notBullet                                                      006C GR
+  0 updates                                                        003F GR
+  0 waitLoop                                                       0097 GR
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   A3   flags    0
+

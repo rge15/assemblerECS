@@ -1,0 +1,265 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;===================================================================================================================================================
+                              2 ; CPCTelera functions
+                              3 ;===================================================================================================================================================
+                              4 .globl cpct_waitHalts_asm
+                              5 .globl cpct_waitVSYNC_asm
+                              6 .globl cpct_memcpy_asm
+                              7 
+                              8 ;===================================================================================================================================================
+                              9 ; Includes
+                             10 ;===================================================================================================================================================
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+                             11 .include "resources/macros.s"
+                              1 ;;Cargar crear entidades con el template indicado
+                              2 .macro CREATE_ENTITY_FROM_TEMPLATE _template
+                              3     ld bc, #_template
+                              4     call _m_game_createInitTemplate
+                              5 .endm
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+                             12 
+                             13 ;===================================================================================================================================================
+                             14 ; Public functions
+                             15 ;===================================================================================================================================================
+                             16 .globl _man_entityInit
+                             17 .globl _man_entityDestroy
+                             18 .globl _man_entityUpdate
+                             19 .globl _man_createEntity
+                             20 .globl _sys_physics_update
+                             21 .globl _sys_init_render
+                             22 .globl _sys_render_update
+                             23 .globl _sys_animator_update
+                             24 .globl _sys_ai_update
+                             25 
+                             26 
+                             27 ;===================================================================================================================================================
+                             28 ; Templates
+                             29 ;===================================================================================================================================================
+                             30 .globl _player_template_e
+                             31 .globl _mothership_template_e
+                             32 .globl _enemy_template_e
+                             33 .globl _playerLife_template_e
+                             34 .globl _shot_template_e
+                             35 
+                             36 
+                             37 ;===================================================================================================================================================
+                             38 ; Manager data
+                             39 ;===================================================================================================================================================
+   0000                      40 _enemyOnLane:
+   0000 00                   41    .db #0x00
+                             42 
+   0001                      43 _m_playerShot:
+   0001 00                   44    .db #0x00
+                             45 
+   0002                      46 _m_playerEntity:
+   0002 00 00                47    .dw #0x0000
+                             48 ;===================================================================================================================================================
+                             49 ; FUNCION _m_game_createInitTemplate   
+                             50 ; Crea la entidad con el template indicado
+                             51 ; BC : Valor de template a crear
+                             52 ;===================================================================================================================================================
+   0004                      53 _m_game_createInitTemplate::
+   0004 CD 00 00      [17]   54    call _man_createEntity
+   0007 E5            [11]   55    push hl
+   0008 EB            [ 4]   56    ex de,hl
+   0009 60            [ 4]   57    ld h, b
+   000A 69            [ 4]   58    ld l, c
+   000B 01 10 00      [10]   59    ld bc,#0x0010
+   000E CD 00 00      [17]   60    call cpct_memcpy_asm
+   0011 E1            [10]   61    pop hl
+   0012 C9            [10]   62    ret
+                             63 
+                             64 
+                             65 ;===================================================================================================================================================
+                             66 ; FUNCION _m_game_init   
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 4.
+Hexadecimal [16-Bits]
+
+
+
+                             67 ; Inicializa el juego y sus entidades
+                             68 ; NO llega ningun dato
+                             69 ;===================================================================================================================================================
+   0013                      70 _m_game_init::
+   0013 CD 00 00      [17]   71    call  _sys_init_render
+   0016 CD 00 00      [17]   72    call  _man_entityInit
+                             73 
+                             74 
+                             75    ; Create MotherBoard
+   0019                      76    CREATE_ENTITY_FROM_TEMPLATE _mothership_template_e
+   0019 01 00 00      [10]    1     ld bc, #_mothership_template_e
+   001C CD 04 00      [17]    2     call _m_game_createInitTemplate
+                             77 
+                             78    ; Create Lifes
+   001F 3E 0F         [ 7]   79    ld a,#0x0F
+   0021                      80    createLife:
+   0021 F5            [11]   81    push af
+                             82 
+   0022                      83    CREATE_ENTITY_FROM_TEMPLATE _playerLife_template_e
+   0022 01 00 00      [10]    1     ld bc, #_playerLife_template_e
+   0025 CD 04 00      [17]    2     call _m_game_createInitTemplate
+   0028 23            [ 6]   84    inc hl
+   0029 23            [ 6]   85    inc hl
+   002A F1            [10]   86    pop af
+   002B 77            [ 7]   87    ld (hl), a
+                             88 
+   002C D6 05         [ 7]   89    sub #0x05
+   002E 20 F1         [12]   90    jr NZ, createLife
+                             91 
+                             92    ; CreatePlayer
+   0030                      93    CREATE_ENTITY_FROM_TEMPLATE _player_template_e
+   0030 01 00 00      [10]    1     ld bc, #_player_template_e
+   0033 CD 04 00      [17]    2     call _m_game_createInitTemplate
+   0036 EB            [ 4]   94    ex de,hl
+   0037 21 02 00      [10]   95    ld hl, #_m_playerEntity
+   003A 72            [ 7]   96    ld (hl), d
+   003B 23            [ 6]   97    inc hl
+   003C 73            [ 7]   98    ld (hl), e
+   003D EB            [ 4]   99    ex de,hl
+   003E C9            [10]  100 ret
+                            101 
+                            102 
+                            103 ;===================================================================================================================================================
+                            104 ; FUNCION _m_game_play   
+                            105 ; Bucle del juego
+                            106 ; NO llega ningun dato
+                            107 ;===================================================================================================================================================
+   003F                     108 _m_game_play::
+   003F                     109    updates:
+   003F CD 00 00      [17]  110       call _sys_ai_update
+   0042 CD 00 00      [17]  111       call _sys_physics_update
+   0045 CD 00 00      [17]  112       call _sys_animator_update
+   0048 CD 00 00      [17]  113       call _sys_render_update
+                            114       
+   004B CD 00 00      [17]  115       call _man_entityUpdate
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 5.
+Hexadecimal [16-Bits]
+
+
+
+   004E CD 95 00      [17]  116       call _wait
+   0051 18 EC         [12]  117    jr updates
+                            118 
+   0053 C9            [10]  119 ret
+                            120 
+                            121 ;===================================================================================================================================================
+                            122 ; FUNCION _m_game_createEnemy   
+                            123 ; Crea un enemigo
+                            124 ; NO llega ningun dato
+                            125 ;===================================================================================================================================================
+   0054                     126 _m_game_createEnemy::
+   0054 21 00 00      [10]  127    ld hl, #_enemyOnLane
+   0057 35            [11]  128    dec (hl)
+   0058 34            [11]  129    inc (hl)
+   0059 C0            [11]  130    ret NZ
+   005A 34            [11]  131    inc (hl)
+                            132 
+                            133    ; Create Enemy
+   005B                     134    CREATE_ENTITY_FROM_TEMPLATE _enemy_template_e
+   005B 01 00 00      [10]    1     ld bc, #_enemy_template_e
+   005E CD 04 00      [17]    2     call _m_game_createInitTemplate
+                            135 
+   0061 C9            [10]  136    ret
+                            137 
+                            138 
+                            139 ;===================================================================================================================================================
+                            140 ; FUNCION _m_game_destroyEntity
+                            141 ; Funcion que destruye la entidad indicada
+                            142 ; HL : Llega el valor de la entidad
+                            143 ;===================================================================================================================================================
+   0062                     144 _m_game_destroyEntity::
+   0062 E5            [11]  145    push hl
+   0063 7E            [ 7]  146    ld a,(hl)
+   0064 E6 08         [ 7]  147    and #0x08
+   0066 28 04         [12]  148    jr Z, notBullet
+                            149 
+   0068 21 01 00      [10]  150    ld hl,#_m_playerShot
+   006B 35            [11]  151    dec (hl)
+                            152 
+   006C                     153    notBullet:
+   006C E1            [10]  154    pop hl
+   006D CD 00 00      [17]  155    call _man_entityDestroy
+   0070 C9            [10]  156    ret
+                            157 
+                            158 
+                            159 ;===================================================================================================================================================
+                            160 ; FUNCION _m_game_playerShot
+                            161 ; Funcion que dispara si puede
+                            162 ; NO llega nada
+                            163 ;===================================================================================================================================================
+   0071                     164 _m_game_playerShot::
+                            165    ; Create Shot
+                            166 
+   0071 21 01 00      [10]  167    ld hl,#_m_playerShot
+   0074 35            [11]  168    dec (hl)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 6.
+Hexadecimal [16-Bits]
+
+
+
+   0075 34            [11]  169    inc (hl)
+   0076 C0            [11]  170    ret NZ
+                            171 
+   0077 01 00 00      [10]  172    ld bc, #_shot_template_e   
+   007A CD 04 00      [17]  173    call _m_game_createInitTemplate
+                            174 
+   007D 23            [ 6]  175    inc hl
+   007E 23            [ 6]  176    inc hl      ;; HL lo subo a x del shoot
+   007F EB            [ 4]  177    ex de,hl
+                            178 
+   0080 21 02 00      [10]  179    ld hl, #_m_playerEntity ;; Recojo la posicion de la entidad jugador
+   0083 46            [ 7]  180    ld b,(hl)
+   0084 23            [ 6]  181    inc hl
+   0085 4E            [ 7]  182    ld c,(hl)
+   0086 60            [ 4]  183    ld h,b
+   0087 69            [ 4]  184    ld l,c
+   0088 23            [ 6]  185    inc hl
+   0089 23            [ 6]  186    inc hl  ;; Una vez obtenida la direccion del inicio del jugador, cojo si x y le sumo 2 y se la guardo al shoot
+   008A 7E            [ 7]  187    ld a,(hl)
+   008B C6 02         [ 7]  188    add #0x02
+   008D EB            [ 4]  189    ex de,hl
+   008E 77            [ 7]  190    ld (hl),a
+                            191 
+   008F 21 01 00      [10]  192    ld hl,#_m_playerShot
+   0092 34            [11]  193    inc (hl)
+                            194 
+   0093 C9            [10]  195    ret
+                            196 
+                            197 
+                            198 
+                            199 ;===================================================================================================================================================
+                            200 ; FUNCION _m_game_tryDownEnemy
+                            201 ; Funcion que intenta bajar a un enemigo de carril
+                            202 ; HL : Llega el valor de la entidad
+                            203 ;===================================================================================================================================================
+   0094                     204 _m_game_tryDownEnemy::
+                            205    ;;TODO : No lo hago por ahorrar tiempo
+   0094 C9            [10]  206    ret
+                            207 
+                            208 ;===================================================================================================================================================
+                            209 ; FUNCION _wait   
+                            210 ; Espera un tiempo antes de realizar otra iteracion del bucle de juego
+                            211 ; NO llega ningun dato
+                            212 ;===================================================================================================================================================
+                            213 
+   0095                     214 _wait::
+   0095 26 05         [ 7]  215    ld h, #0x05
+   0097                     216       waitLoop:
+   0097 06 02         [ 7]  217          ld b, #0x02
+   0099 CD 00 00      [17]  218          call cpct_waitHalts_asm
+   009C CD 00 00      [17]  219          call cpct_waitVSYNC_asm
+   009F 25            [ 4]  220          dec h
+   00A0 20 F5         [12]  221          jr NZ, waitLoop
+   00A2 C9            [10]  222    ret

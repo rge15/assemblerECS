@@ -85,3 +85,9 @@ _sprite_enemy:
    .dw #0xFF00
    .dw #0xFFFF
    .dw #0x00FF
+
+_sprite_shot:
+   .dw #0xFFFF
+   .dw #0xFFFF
+   .dw #0xFFFF
+   .dw #0xFFFF

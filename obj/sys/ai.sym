@@ -1,0 +1,42 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+    _m_functionMemory                                              **** GX
+    _m_game_createEnemy                                            **** GX
+    _m_game_destroyEntity                                          **** GX
+    _m_matchedEntity                                               **** GX
+    _man_entityForAllMatching                                      **** GX
+  0 _sys_ai_behaviourAutoDestroy                                   006D GR
+  0 _sys_ai_behaviourEnemy                                         004A GR
+  0 _sys_ai_behaviourLeftRight                                     004E GR
+  0 _sys_ai_behaviourMemory                                        0000 GR
+  0 _sys_ai_behaviourMothership                                    003A GR
+  0 _sys_ai_update                                                 0002 GR
+  0 _sys_ai_updateOneEntity                                        0011 GR
+    cpct_isKeyPressed_asm                                          **** GX
+    cpct_scanKeyboard_f_asm                                        **** GX
+  0 dontDestroy                                                    007F GR
+  0 exitUpdate                                                     006C GR
+  0 leftPart                                                       0065 GR
+  0 notCreateEnemy                                                 0046 GR
+  0 rightPart                                                      006A GR
+  0 searchAICounter                                                006F GR
+  0 searchBehaviour                                                0013 GR
+  0 searchEntityType                                               002F GR
+  0 searchType                                                     0078 GR
+  0 updatedOneEntity                                               0039 GR
+
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size   80   flags    0
+

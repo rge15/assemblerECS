@@ -10,6 +10,7 @@
 .globl _man_entityForAllMatching
 .globl _man_entityDestroy
 .globl _man_setEntity4Destroy
+.globl _m_game_playerShot
 
 ;===================================================================================================================================================
 ; Public data
@@ -31,17 +32,14 @@ _sys_physics_update::
     ret
 
 
-;;
-;; Hace los calculos de la posicion de las entidades con la velocidad de cada entidad
-;;
-
-
 ;===================================================================================================================================================
 ; FUNCION _sys_physics_checkKeyboard
 ; Cambia el valor de la velocidad en x si se pulsa la tecla : O o P
+; Y manda la orden de disparar si pulsa Espacio
 ; HL : LA entidad a updatear
 ;===================================================================================================================================================
 _sys_physics_checkKeyboard::
+    inc hl
     inc hl
     inc hl
     inc hl
@@ -62,17 +60,23 @@ _sys_physics_checkKeyboard::
     pop hl
     ld (hl), #0x00
 
-    jp stopCheck
+    jp stopCheckMovement
     leftPressed:
-        
         pop hl
         ld (hl), #0xFF
-        jp stopCheck
+        jp stopCheckMovement
     rightPressed:
         pop hl
         ld (hl), #0x01
 
-    stopCheck:
+    stopCheckMovement:
+
+    ld hl, #0x8005 ;;Key SpaceBar
+    call cpct_isKeyPressed_asm
+    jr Z, dontShoot
+    call _m_game_playerShot
+
+    dontShoot:
     ret
 
 
@@ -87,7 +91,9 @@ _sys_physics_checkKeyboard::
 ;===================================================================================================================================================
 _sys_physics_updateOneEntity::    
     push hl
-    ld a,(hl)
+    inc hl
+    ld a,(hl) 
+    dec hl
     and #0x04
     ld b,h
     ld c,l
@@ -96,6 +102,7 @@ _sys_physics_updateOneEntity::
     noInput:
     pop hl
 
+    inc hl
     inc hl
     ld  b,(hl) ; posX
     inc hl

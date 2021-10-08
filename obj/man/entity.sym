@@ -1,0 +1,46 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.                                                    =  2710 GL
+    .__.ABS.                                                    =  0000 G
+    .__.CPU.                                                    =  0000 GL
+    .__.H$L.                                                    =  0000 GL
+  0 _m_emptyMemCheck                                               0070 GR
+  0 _m_entities                                                    0000 GR
+  0 _m_functionMemory                                              0073 GR
+  0 _m_matchedEntity                                               0075 GR
+  0 _m_next_free_entity                                            0071 GR
+  0 _m_numEntities                                                 0076 GR
+  0 _m_sizeOfEntity                                                0077 GR
+  0 _man_createEntity                                              0090 GR
+  0 _man_entityDestroy                                             00DF GR
+  0 _man_entityForAllMatching                                      00A5 GR
+  0 _man_entityInit                                                0078 GR
+  0 _man_entityUpdate                                              0116 GR
+  0 _man_entity_freeSpace                                          0133 GR
+  0 _man_setEntity4Destroy                                         00DA GR
+  0 _next_entity                                                   012B GR
+  0 allDone                                                        00D8 GR
+  0 checkMemory                                                    00F1 GR
+  0 checkSignature                                                 00CA GR
+  0 continue                                                       012C GR
+  0 copy                                                           00F5 GR
+    cpct_memcpy_asm                                                **** GX
+    cpct_memset_asm                                                **** GX
+  0 next_entity2                                                   00BD GR
+  0 no_copy                                                        0108 GR
+  0 not_invalid2                                                   00AF GR
+  0 setLast                                                        00E7 GR
+  0 setLast2                                                       0104 GR
+  0 valid                                                          0124 GR
+
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE                                      size  13B   flags    0
+

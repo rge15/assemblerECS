@@ -1,98 +1,37 @@
-
-
-
 ;===================================================================================================================================================
 ; CPCTelera functions
 ;===================================================================================================================================================
-
 .globl cpct_waitHalts_asm
 .globl cpct_waitVSYNC_asm
 .globl cpct_memcpy_asm
 
+;===================================================================================================================================================
+; Includes
+;===================================================================================================================================================
+.include "resources/macros.s"
 
 ;===================================================================================================================================================
 ; Public functions
 ;===================================================================================================================================================
 .globl _man_entityInit
-.globl _man_createEntity
+.globl _man_entityDestroy
 .globl _man_entityUpdate
+.globl _man_createEntity
 .globl _sys_physics_update
+.globl _sys_init_render
 .globl _sys_render_update
 .globl _sys_animator_update
-.globl _sys_init_render
 .globl _sys_ai_update
-.globl _sys_ai_behaviourLeftRight
-.globl _sys_ai_behaviourMothership
 
-
-;===================================================================================================================================================
-; Public data
-;===================================================================================================================================================
-;;Animations
-.globl _man_anim_player
-;;Sprites
-.globl _sprite_player01
-.globl _sprite_player02
-.globl _sprite_mothership
-.globl _sprite_enemy
-  
 
 ;===================================================================================================================================================
 ; Templates
 ;===================================================================================================================================================
-_mothership_template_e:
-   .db #0x0B   ; type
-   .db #0x26   ; x
-   .db #0x0A   ; y
-   .db #0x04   ; width
-   .db #0x06   ; heigth
-   .db #0xFF   ; vx
-   .db #0x00   ; vy
-   .dw #_sprite_mothership ; sprite
-   .dw #_sys_ai_behaviourMothership ;ai_behaviour
-   .dw #0x0000 ;animator
-   .db #0x00   ;anim. counter
-
-_enemy_template_e:
-   .db #0x0B   ; type
-   .db #0x26   ; x
-   .db #0x1E   ; y
-   .db #0x06   ; width
-   .db #0x06   ; heigth
-   .db #0x01   ; vx
-   .db #0x00   ; vy
-   .dw #_sprite_enemy ; sprite
-   .dw #_sys_ai_behaviourLeftRight ;ai_behaviour
-   .dw #0x0000 ;animator
-   .db #0x00   ;anim. counter
-
-
-_playerLife_template_e:
-   .db #0x01   ; type
-   .db #0x00   ; x
-   .db #0xC0   ; y
-   .db #0x06   ; width
-   .db #0x08   ; heigth
-   .db #0x00   ; vx
-   .db #0x00   ; vy
-   .dw #_sprite_player01 ; sprite
-   .dw #0x0000 ;ai_behaviour
-   .dw #0x0000 ;animator
-   .db #0x00   ;anim. counter
-
-_player_template_e:
-   .db #0x17   ; type
-   .db #0x26   ; x
-   .db #0xB0   ; y
-   .db #0x06   ; width
-   .db #0x08   ; heigth
-   .db #0x00   ; vx
-   .db #0x00   ; vy
-   .dw #_sprite_player01 ; sprite
-   .dw #0x0000 ;ai_behaviour
-   .dw #_man_anim_player ;animator
-   .db #0x10   ;anim. counter
-
+.globl _player_template_e
+.globl _mothership_template_e
+.globl _enemy_template_e
+.globl _playerLife_template_e
+.globl _shot_template_e
 
 
 ;===================================================================================================================================================
@@ -101,6 +40,11 @@ _player_template_e:
 _enemyOnLane:
    .db #0x00
 
+_m_playerShot:
+   .db #0x00
+
+_m_playerEntity:
+   .dw #0x0000
 ;===================================================================================================================================================
 ; FUNCION _m_game_createInitTemplate   
 ; Crea la entidad con el template indicado
@@ -112,7 +56,7 @@ _m_game_createInitTemplate::
    ex de,hl
    ld h, b
    ld l, c
-   ld bc,#0x000E
+   ld bc,#0x0010
    call cpct_memcpy_asm
    pop hl
    ret
@@ -129,15 +73,15 @@ _m_game_init::
 
 
    ; Create MotherBoard
-   ld bc, #_mothership_template_e   
-   call _m_game_createInitTemplate
+   CREATE_ENTITY_FROM_TEMPLATE _mothership_template_e
 
    ; Create Lifes
    ld a,#0x0F
    createLife:
    push af
-   ld bc, #_playerLife_template_e
-   call _m_game_createInitTemplate
+
+   CREATE_ENTITY_FROM_TEMPLATE _playerLife_template_e
+   inc hl
    inc hl
    pop af
    ld (hl), a
@@ -146,8 +90,13 @@ _m_game_init::
    jr NZ, createLife
 
    ; CreatePlayer
-   ld bc, #_player_template_e
-   call _m_game_createInitTemplate
+   CREATE_ENTITY_FROM_TEMPLATE _player_template_e
+   ex de,hl
+   ld hl, #_m_playerEntity
+   ld (hl), d
+   inc hl
+   ld (hl), e
+   ex de,hl
 ret
 
 
@@ -182,9 +131,78 @@ _m_game_createEnemy::
    inc (hl)
 
    ; Create Enemy
-   ld bc, #_enemy_template_e   
-   call _m_game_createInitTemplate   
-   
+   CREATE_ENTITY_FROM_TEMPLATE _enemy_template_e
+
+   ret
+
+
+;===================================================================================================================================================
+; FUNCION _m_game_destroyEntity
+; Funcion que destruye la entidad indicada
+; HL : Llega el valor de la entidad
+;===================================================================================================================================================
+_m_game_destroyEntity::
+   push hl
+   ld a,(hl)
+   and #0x08
+   jr Z, notBullet
+
+   ld hl,#_m_playerShot
+   dec (hl)
+
+   notBullet:
+   pop hl
+   call _man_entityDestroy
+   ret
+
+
+;===================================================================================================================================================
+; FUNCION _m_game_playerShot
+; Funcion que dispara si puede
+; NO llega nada
+;===================================================================================================================================================
+_m_game_playerShot::
+   ; Create Shot
+
+   ld hl,#_m_playerShot
+   dec (hl)
+   inc (hl)
+   ret NZ
+
+   ld bc, #_shot_template_e   
+   call _m_game_createInitTemplate
+
+   inc hl
+   inc hl      ;; HL lo subo a x del shoot
+   ex de,hl
+
+   ld hl, #_m_playerEntity ;; Recojo la posicion de la entidad jugador
+   ld b,(hl)
+   inc hl
+   ld c,(hl)
+   ld h,b
+   ld l,c
+   inc hl
+   inc hl  ;; Una vez obtenida la direccion del inicio del jugador, cojo si x y le sumo 2 y se la guardo al shoot
+   ld a,(hl)
+   add #0x02
+   ex de,hl
+   ld (hl),a
+
+   ld hl,#_m_playerShot
+   inc (hl)
+
+   ret
+
+
+
+;===================================================================================================================================================
+; FUNCION _m_game_tryDownEnemy
+; Funcion que intenta bajar a un enemigo de carril
+; HL : Llega el valor de la entidad
+;===================================================================================================================================================
+_m_game_tryDownEnemy::
+   ;;TODO : No lo hago por ahorrar tiempo
    ret
 
 ;===================================================================================================================================================

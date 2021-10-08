@@ -1,0 +1,110 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;===================================================================================================================================================
+                              2 ; Public functions
+                              3 ;===================================================================================================================================================
+                              4 .globl _sys_ai_behaviourLeftRight
+                              5 .globl _sys_ai_behaviourMothership
+                              6 .globl _sys_ai_behaviourEnemy
+                              7 .globl _sys_ai_behaviourAutoDestroy
+                              8 
+                              9 
+                             10 ;===================================================================================================================================================
+                             11 ; Public data
+                             12 ;===================================================================================================================================================
+                             13 ;;Animations
+                             14 .globl _man_anim_player
+                             15 ;;Sprites
+                             16 .globl _sprite_player01
+                             17 .globl _sprite_player02
+                             18 .globl _sprite_mothership
+                             19 .globl _sprite_enemy
+                             20 .globl _sprite_shot
+                             21   
+                             22 
+                             23 ;===================================================================================================================================================
+                             24 ; Templates
+                             25 ;===================================================================================================================================================
+   0000                      26 _mothership_template_e:
+   0000 04                   27    .db #0x04   ; type
+   0001 0B                   28    .db #0x0B   ; cmp
+   0002 26                   29    .db #0x26   ; x
+   0003 0A                   30    .db #0x0A   ; y
+   0004 04                   31    .db #0x04   ; width
+   0005 06                   32    .db #0x06   ; heigth
+   0006 FF                   33    .db #0xFF   ; vx
+   0007 00                   34    .db #0x00   ; vy
+   0008 00 00                35    .dw #_sprite_mothership ; sprite
+   000A 00 00                36    .dw #_sys_ai_behaviourMothership ;ai_behaviour
+   000C 00                   37    .db #0x00   ;ai_counter
+   000D 00 00                38    .dw #0x0000 ;animator
+   000F 00                   39    .db #0x00   ;anim. counter
+                             40 
+   0010                      41 _enemy_template_e:
+   0010 02                   42    .db #0x02   ; type
+   0011 0B                   43    .db #0x0B   ; cmp
+   0012 26                   44    .db #0x26   ; x
+   0013 1E                   45    .db #0x1E   ; y
+   0014 06                   46    .db #0x06   ; width
+   0015 06                   47    .db #0x06   ; heigth
+   0016 01                   48    .db #0x01   ; vx
+   0017 00                   49    .db #0x00   ; vy
+   0018 00 00                50    .dw #_sprite_enemy ; sprite
+   001A 00 00                51    .dw #_sys_ai_behaviourEnemy ;ai_behaviour
+   001C 00                   52    .db #0x00   ;ai_counter
+   001D 00 00                53    .dw #0x0000 ;animator
+   001F 00                   54    .db #0x00   ;anim. counter
+                             55 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+   0020                      56 _shot_template_e:
+   0020 08                   57    .db #0x08   ; type
+   0021 0B                   58    .db #0x0B   ; cmp
+   0022 00                   59    .db #0x00   ; x
+   0023 A7                   60    .db #0xA7   ; y
+   0024 01                   61    .db #0x01   ; width
+   0025 08                   62    .db #0x08   ; heigth
+   0026 00                   63    .db #0x00   ; vx
+   0027 F7                   64    .db #0xF7   ; vy
+   0028 00 00                65    .dw #_sprite_shot ; sprite
+   002A 00 00                66    .dw #_sys_ai_behaviourAutoDestroy ;ai_behaviour
+   002C 0B                   67    .db #0x0B   ;ai_counter
+   002D 00 00                68    .dw #0x0000 ;animator
+   002F 00                   69    .db #0x00   ;anim. counter
+                             70 
+                             71 
+   0030                      72 _playerLife_template_e:
+   0030 10                   73    .db #0x10   ; type
+   0031 01                   74    .db #0x01   ; cmp
+   0032 00                   75    .db #0x00   ; x
+   0033 C0                   76    .db #0xC0   ; y
+   0034 06                   77    .db #0x06   ; width
+   0035 08                   78    .db #0x08   ; heigth
+   0036 00                   79    .db #0x00   ; vx
+   0037 00                   80    .db #0x00   ; vy
+   0038 00 00                81    .dw #_sprite_player01 ; sprite
+   003A 00 00                82    .dw #0x0000 ;ai_behaviour
+   003C 00                   83    .db #0x00   ;ai_counter
+   003D 00 00                84    .dw #0x0000 ;animator
+   003F 00                   85    .db #0x00   ;anim. counter
+                             86 
+   0040                      87 _player_template_e:
+   0040 01                   88    .db #0x01   ; type
+   0041 17                   89    .db #0x17   ; cmp
+   0042 26                   90    .db #0x26   ; x
+   0043 B0                   91    .db #0xB0   ; y
+   0044 06                   92    .db #0x06   ; width
+   0045 08                   93    .db #0x08   ; heigth
+   0046 00                   94    .db #0x00   ; vx
+   0047 00                   95    .db #0x00   ; vy
+   0048 00 00                96    .dw #_sprite_player01 ; sprite
+   004A 00 00                97    .dw #0x0000 ;ai_behaviour
+   004C 00                   98    .db #0x00   ;ai_counter
+   004D 00 00                99    .dw #_man_anim_player ;animator
+   004F 10                  100    .db #0x10   ;anim. counter

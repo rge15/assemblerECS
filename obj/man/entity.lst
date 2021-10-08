@@ -1,0 +1,306 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;===================================================================================================================================================
+                              2 ; CPCTelera functions
+                              3 ;===================================================================================================================================================
+                              4 .globl cpct_memset_asm
+                              5 .globl cpct_memcpy_asm
+                              6 
+                              7 ;===================================================================================================================================================
+                              8 ; Entity types   
+                              9 ;===================================================================================================================================================
+                             10 ; #define e_type_invalid     0x00
+                             11 ; #define e_type_motherBoard 0x04
+                             12 ; #define e_type_enemy       0x02
+                             13 ; #define e_type_player      0x01
+                             14 ; #define e_type_shoot       0x08
+                             15 ; #define e_type_playerLife  0x10
+                             16 ; #define e_type_default     0x02 
+                             17 ; #define e_type_dead        0x80
+                             18 
+                             19 ;===================================================================================================================================================
+                             20 ; Component types   
+                             21 ;===================================================================================================================================================
+                             22 ; #define e_cmp_render   0x01
+                             23 ; #define e_cmp_movable  0x02
+                             24 ; #define e_cmp_input    0x04
+                             25 ; #define e_cmp_ai       0x08
+                             26 ; #define e_cmp_animated 0x10
+                             27 ; #define e_cmp_collider 0x20
+                             28 
+                             29 ;===================================================================================================================================================
+                             30 ; Manager data   
+                             31 ;===================================================================================================================================================
+                             32 ;; Descripcion : Array de entidades
+   0000                      33 _m_entities::
+   0000                      34     .ds 112
+                             35 
+                             36 ;; Descripcion : Memoria vacia al final del array para controlar su final
+   0070                      37 _m_emptyMemCheck::
+   0070                      38     .ds 1
+                             39 
+                             40 ;; Descripcion : Direccion de memoria con la siguiente posicion del array libre 
+   0071                      41 _m_next_free_entity::
+   0071                      42     .ds 2
+                             43 
+                             44 ;; Descripcion : Direccion de memoria donde este la funcion de inversion de control
+   0073                      45 _m_functionMemory::
+   0073                      46     .ds 2
+                             47 
+                             48 ;; Descripcion : Signature para comprobar entidades en el forAllMatching 
+   0075                      49 _m_matchedEntity::
+   0075                      50     .ds 1
+                             51 
+                             52 ;; Descripcion : Numero de entidades que caben en el array _m_entities
+   0076                      53 _m_numEntities::
+   0076                      54     .ds 1
+                             55 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+                             56 ;; Descripcion : TAmaño en bytes de 1 entity
+   0077                      57 _m_sizeOfEntity::
+   0077 10                   58     .db #0x10
+                             59 
+                             60 
+                             61 ;===================================================================================================================================================
+                             62 ; FUNCION _man_entityInit   
+                             63 ; Inicializa el manager de entidades y sus datos
+                             64 ; NO llega ningun dato
+                             65 ;===================================================================================================================================================
+   0078                      66 _man_entityInit::
+   0078 11 00 00      [10]   67     ld  DE, #_m_entities
+   007B 3E 00         [ 7]   68     ld  A,  #0x00
+   007D 32 70 00      [13]   69     ld  (_m_emptyMemCheck), a
+   0080 32 76 00      [13]   70     ld  (_m_numEntities), a
+   0083 01 70 00      [10]   71     ld  BC, #0x0070
+   0086 CD 00 00      [17]   72     call    cpct_memset_asm
+                             73     ;;Destroyed: AF & BC & DE & HL
+                             74     
+   0089 21 00 00      [10]   75     ld  hl, #_m_entities
+   008C 22 71 00      [16]   76     ld  (_m_next_free_entity), hl
+                             77     
+   008F C9            [10]   78     ret
+                             79 
+                             80 
+                             81 ;===================================================================================================================================================
+                             82 ; FUNCION _man_createEntity   
+                             83 ; Crea una entidad
+                             84 ; NO llega ningun dato
+                             85 ;===================================================================================================================================================
+   0090                      86 _man_createEntity::
+   0090 ED 5B 71 00   [20]   87     ld  de, (_m_next_free_entity)
+   0094 26 00         [ 7]   88     ld  h, #0x00
+                             89     ;;TODO:Ver si esto está guay
+   0096 3A 77 00      [13]   90     ld  a, (#_m_sizeOfEntity)
+   0099 6F            [ 4]   91     ld  l, a
+   009A 19            [11]   92     add hl,de
+   009B 22 71 00      [16]   93     ld  (_m_next_free_entity),hl
+   009E 21 76 00      [10]   94     ld  hl, #_m_numEntities
+   00A1 34            [11]   95     inc (hl)
+                             96 
+                             97 
+   00A2 6B            [ 4]   98     ld  l,e
+   00A3 62            [ 4]   99     ld  h,d
+   00A4 C9            [10]  100     ret
+                            101 
+                            102 
+                            103 
+                            104 ;===================================================================================================================================================
+                            105 ; FUNCION _man_entityForAllMatching
+                            106 ; Ejecuta la funcion  de _m_functionMemory por cada entidad que cumpla con el tipo designado en  _m_matchedEntity
+                            107 ; NO llega ningun dato
+                            108 ;===================================================================================================================================================
+   00A5                     109 _man_entityForAllMatching::
+   00A5 21 00 00      [10]  110     ld  hl, #_m_entities
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+                            111     
+   00A8 7E            [ 7]  112     ld  a,(hl)
+                            113     
+   00A9 B7            [ 4]  114     or a,a
+   00AA C8            [11]  115     ret Z
+   00AB E5            [11]  116     push hl
+   00AC C3 CA 00      [10]  117     jp checkSignature
+   00AF                     118     not_invalid2:
+   00AF E1            [10]  119         pop hl
+   00B0 E5            [11]  120         push hl
+   00B1 DD 21 BD 00   [14]  121         ld ix, #next_entity2
+   00B5 DD E5         [15]  122         push ix
+                            123 
+   00B7 DD 2A 73 00   [20]  124         ld ix, (#_m_functionMemory)
+   00BB DD E9         [ 8]  125         jp (ix)
+                            126 
+   00BD                     127         next_entity2:
+   00BD E1            [10]  128         pop hl
+   00BE 3A 77 00      [13]  129         ld  a, (#_m_sizeOfEntity)
+   00C1 4F            [ 4]  130         ld  c, a
+   00C2 06 00         [ 7]  131         ld  b, #0x00
+                            132 
+   00C4 09            [11]  133         add hl,bc
+   00C5 E5            [11]  134         push hl
+   00C6 7E            [ 7]  135         ld  a,(hl)
+   00C7 B7            [ 4]  136         or a,a 
+   00C8 28 0E         [12]  137         jr  Z, allDone
+   00CA                     138         checkSignature:
+   00CA 3A 75 00      [13]  139         ld a,(#_m_matchedEntity)
+   00CD 23            [ 6]  140         inc hl
+   00CE A6            [ 7]  141         and (hl)
+   00CF 21 75 00      [10]  142         ld hl , #_m_matchedEntity
+   00D2 96            [ 7]  143         sub (hl)
+   00D3 28 DA         [12]  144         jr Z, not_invalid2
+   00D5 C3 BD 00      [10]  145         jp next_entity2
+   00D8                     146     allDone:
+   00D8 E1            [10]  147     pop hl
+   00D9 C9            [10]  148     ret
+                            149 
+                            150 
+                            151 ;===================================================================================================================================================
+                            152 ; FUNCION _man_setEntity4Destroy
+                            153 ; Establece la entidad para ser destruida
+                            154 ; HL : La entidad para ser marcada
+                            155 ;===================================================================================================================================================
+   00DA                     156 _man_setEntity4Destroy::
+   00DA 3E 80         [ 7]  157     ld a, #0x80
+   00DC B6            [ 7]  158     or (hl)
+   00DD 77            [ 7]  159     ld (hl),a
+   00DE C9            [10]  160 ret
+                            161 
+                            162 ;===================================================================================================================================================
+                            163 ; FUNCION _man_entityDestroy
+                            164 ; Elimina de las entidades la entidad de HL y arregla el array de entidades 
+                            165 ; para establecer la ultima entidad al espacio liberado por la entidad destruida 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 4.
+Hexadecimal [16-Bits]
+
+
+
+                            166 ; HL : La entidad para ser destruida
+                            167 ;===================================================================================================================================================
+   00DF                     168 _man_entityDestroy::
+   00DF ED 5B 71 00   [20]  169     ld de, (#_m_next_free_entity)
+   00E3 EB            [ 4]  170     ex de, hl
+                            171     ;; HL = _m_next_free_entity
+                            172     ;; DE = entity to destroy
+                            173 
+                            174 
+                            175     ;; Buscamos la ultima entidad
+   00E4 3A 77 00      [13]  176     ld  a, (#_m_sizeOfEntity)
+   00E7                     177     setLast:
+   00E7 2B            [ 6]  178         dec hl
+   00E8 3D            [ 4]  179         dec a
+   00E9 20 FC         [12]  180         jr NZ, setLast
+                            181     ;; de = e && hl = last
+                            182 
+                            183 
+                            184     ;;Comprobamos que la ultima entidad libre y la entidad a destruir no sea la misma
+                            185     ;;if( e != last)
+   00EB 7B            [ 4]  186     ld a, e
+   00EC 95            [ 4]  187     sub l
+   00ED 28 02         [12]  188     jr Z, checkMemory
+                            189 
+   00EF 18 04         [12]  190     jr copy
+   00F1                     191     checkMemory:
+   00F1 7A            [ 4]  192     ld a,d
+   00F2 94            [ 4]  193     sub h
+   00F3 28 13         [12]  194     jr Z, no_copy 
+                            195 
+                            196     ;;Si no es la misma copiamos la ultima entidad al espacio de la entidad a destruir
+   00F5                     197     copy:
+                            198     ; cpct_memcpy(e,last,sizeof(Entity_t));
+   00F5 06 00         [ 7]  199     ld b, #0x00
+   00F7 3A 77 00      [13]  200     ld  a, (#_m_sizeOfEntity)
+   00FA 4F            [ 4]  201     ld c, a
+   00FB CD 00 00      [17]  202     call cpct_memcpy_asm
+                            203 
+                            204     ;;Volvemos a asignar a hl el valor de la ultima entity
+   00FE 21 71 00      [10]  205     ld hl, #_m_next_free_entity
+   0101 3A 77 00      [13]  206     ld  a, (#_m_sizeOfEntity)
+   0104                     207     setLast2:
+   0104 2B            [ 6]  208         dec hl
+   0105 3D            [ 4]  209         dec a
+   0106 20 FC         [12]  210         jr NZ, setLast2
+                            211 
+                            212 
+                            213     ;;Aquí liberamos el ultimo espacio del array de entidades y lo seteamos como el proximo espacio libre 
+   0108                     214     no_copy:
+                            215     ;last->type = e_type_invalid;
+   0108 36 00         [10]  216     ld (hl),#0x00
+                            217     ;m_next_free_entity = last;
+   010A 11 71 00      [10]  218     ld de, #_m_next_free_entity
+   010D EB            [ 4]  219     ex de, hl
+   010E 73            [ 7]  220     ld (hl), e
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 5.
+Hexadecimal [16-Bits]
+
+
+
+   010F 23            [ 6]  221     inc hl
+   0110 72            [ 7]  222     ld (hl), d
+                            223     ;    --m_num_entities;      
+   0111 21 76 00      [10]  224     ld  hl, #_m_numEntities
+   0114 35            [11]  225     dec (hl)
+   0115 C9            [10]  226     ret
+                            227 
+                            228 
+                            229 ;===================================================================================================================================================
+                            230 ; FUNCION _man_entityUpdate
+                            231 ; Recorre todas las entidades y destruye las entidades marcadas
+                            232 ; NO llega ningun dato 
+                            233 ;===================================================================================================================================================
+   0116                     234 _man_entityUpdate::
+   0116 21 00 00      [10]  235     ld hl, #_m_entities
+                            236 
+   0119 34            [11]  237     inc (hl)
+   011A 35            [11]  238     dec (hl)
+   011B C8            [11]  239     ret Z 
+   011C 3A 77 00      [13]  240     ld a, (#_m_sizeOfEntity)
+   011F 4F            [ 4]  241     ld c, a
+   0120 06 00         [ 7]  242     ld b, #0x00    
+   0122 3E 80         [ 7]  243     ld a, #0x80    
+   0124                     244     valid:
+   0124 A6            [ 7]  245         and (hl)
+   0125 28 04         [12]  246         jr Z, _next_entity
+   0127 20 B6         [12]  247         jr NZ, _man_entityDestroy
+   0129 18 01         [12]  248         jr continue
+                            249 
+   012B                     250         _next_entity:
+   012B 09            [11]  251             add hl, bc
+                            252             ; jr continue
+   012C                     253         continue:
+   012C 3E 80         [ 7]  254             ld a, #0x80
+   012E 34            [11]  255             inc (hl)
+   012F 35            [11]  256             dec (hl)
+   0130 20 F2         [12]  257             jr NZ, valid
+   0132 C9            [10]  258     ret
+                            259 
+                            260 
+                            261 ;===================================================================================================================================================
+                            262 ; FUNCION _man_entity_freeSpace
+                            263 ; Devuelve en a si hay espacio libre en las entidades para poder generar
+                            264 ; NO llega ningun dato 
+                            265 ;===================================================================================================================================================
+   0133                     266 _man_entity_freeSpace::
+   0133 21 76 00      [10]  267         ld hl, #_m_numEntities
+   0136 3A 76 00      [13]  268         ld a, (#_m_numEntities)
+   0139 96            [ 7]  269         sub (hl)
+   013A C9            [10]  270     ret
+                            271 
+                            272 
+                            273 
+                            274 
+                            275 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 6.
+Hexadecimal [16-Bits]
+
+
+
+                            276 

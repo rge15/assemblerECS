@@ -1,0 +1,52 @@
+XL2
+H 1 areas 13 global symbols
+S .__.H$L. Def0000
+S _sprite_player01 Ref0000
+S _sprite_player02 Ref0000
+S _sys_ai_behaviourEnemy Ref0000
+S _man_anim_player Ref0000
+S _sys_ai_behaviourAutoDestroy Ref0000
+S _sprite_shot Ref0000
+S _sys_ai_behaviourLeftRight Ref0000
+S _sprite_mothership Ref0000
+S .__.ABS. Def0000
+S _sys_ai_behaviourMothership Ref0000
+S .__.CPU. Def0000
+S _sprite_enemy Ref0000
+S .__.$$$. Def2710
+A _CODE size 50 flags 0 addr 0
+S _shot_template_e Def0020
+S _mothership_template_e Def0000
+S _player_template_e Def0040
+S _playerLife_template_e Def0030
+S _enemy_template_e Def0010
+T 00 00
+R 00 00 00 00
+T 00 00 04 0B 26 0A 04 06 FF 00 00 00 00 00 00
+R 00 00 00 00 02 0A 08 00 02 0C 0A 00
+T 0D 00 00 00 00
+R 00 00 00 00
+T 10 00
+R 00 00 00 00
+T 10 00 02 0B 26 1E 06 06 01 00 00 00 00 00 00
+R 00 00 00 00 02 0A 0C 00 02 0C 03 00
+T 1D 00 00 00 00
+R 00 00 00 00
+T 20 00
+R 00 00 00 00
+T 20 00 08 0B 00 A7 01 08 00 F7 00 00 00 00 0B
+R 00 00 00 00 02 0A 06 00 02 0C 05 00
+T 2D 00 00 00 00
+R 00 00 00 00
+T 30 00
+R 00 00 00 00
+T 30 00 10 01 00 C0 06 08 00 00 00 00 00 00 00
+R 00 00 00 00 02 0A 01 00
+T 3D 00 00 00 00
+R 00 00 00 00
+T 40 00
+R 00 00 00 00
+T 40 00 01 17 26 B0 06 08 00 00 00 00 00 00 00
+R 00 00 00 00 02 0A 01 00
+T 4D 00 00 00 10
+R 00 00 00 00 02 02 04 00

@@ -1,46 +1,61 @@
+;===================================================================================================================================================
+; CPCTelera functions
+;===================================================================================================================================================
 .globl cpct_memset_asm
 .globl cpct_memcpy_asm
-
 
 ;===================================================================================================================================================
 ; Entity types   
 ;===================================================================================================================================================
-; #define e_type_invalid  0x00
-; #define e_type_render   0x01
-; #define e_type_movable  0x02
-; #define e_type_input    0x04
-; #define e_type_ai       0x08
-; #define e_type_animated 0x10
-; #define e_type_default  0x7F
-; #define e_type_dead     0x80
+; #define e_type_invalid     0x00
+; #define e_type_motherBoard 0x04
+; #define e_type_enemy       0x02
+; #define e_type_player      0x01
+; #define e_type_shoot       0x08
+; #define e_type_playerLife  0x10
+; #define e_type_default     0x02 
+; #define e_type_dead        0x80
 
+;===================================================================================================================================================
+; Component types   
+;===================================================================================================================================================
+; #define e_cmp_render   0x01
+; #define e_cmp_movable  0x02
+; #define e_cmp_input    0x04
+; #define e_cmp_ai       0x08
+; #define e_cmp_animated 0x10
+; #define e_cmp_collider 0x20
 
 ;===================================================================================================================================================
 ; Manager data   
 ;===================================================================================================================================================
-
-;; Array de entidades
+;; Descripcion : Array de entidades
 _m_entities::
-    .ds 84
+    .ds 112
 
-;; Memoria vacia al final del array para controlar su final
+;; Descripcion : Memoria vacia al final del array para controlar su final
 _m_emptyMemCheck::
     .ds 1
 
-;; Direccion de memoria con la siguiente posicion del array libre 
+;; Descripcion : Direccion de memoria con la siguiente posicion del array libre 
 _m_next_free_entity::
     .ds 2
 
-;; Direccion de memoria donde este la funcion de inversion de control
+;; Descripcion : Direccion de memoria donde este la funcion de inversion de control
 _m_functionMemory::
     .ds 2
 
+;; Descripcion : Signature para comprobar entidades en el forAllMatching 
 _m_matchedEntity::
     .ds 1
 
-;; Numero de entidades creadas
+;; Descripcion : Numero de entidades que caben en el array _m_entities
 _m_numEntities::
-    .ds 6
+    .ds 1
+
+;; Descripcion : TAmaño en bytes de 1 entity
+_m_sizeOfEntity::
+    .db #0x10
 
 
 ;===================================================================================================================================================
@@ -53,7 +68,7 @@ _man_entityInit::
     ld  A,  #0x00
     ld  (_m_emptyMemCheck), a
     ld  (_m_numEntities), a
-    ld  BC, #0x0054
+    ld  BC, #0x0070
     call    cpct_memset_asm
     ;;Destroyed: AF & BC & DE & HL
     
@@ -71,14 +86,17 @@ _man_entityInit::
 _man_createEntity::
     ld  de, (_m_next_free_entity)
     ld  h, #0x00
-    ld  l, #0x0E
+    ;;TODO:Ver si esto está guay
+    ld  a, (#_m_sizeOfEntity)
+    ld  l, a
     add hl,de
     ld  (_m_next_free_entity),hl
     ld  hl, #_m_numEntities
     inc (hl)
+
+
     ld  l,e
     ld  h,d
-    ld  (hl), #0x7F
     ret
 
 
@@ -108,8 +126,9 @@ _man_entityForAllMatching::
 
         next_entity2:
         pop hl
-        ld  c,#0x0E
-        ld  b,#0x00
+        ld  a, (#_m_sizeOfEntity)
+        ld  c, a
+        ld  b, #0x00
 
         add hl,bc
         push hl
@@ -118,6 +137,7 @@ _man_entityForAllMatching::
         jr  Z, allDone
         checkSignature:
         ld a,(#_m_matchedEntity)
+        inc hl
         and (hl)
         ld hl , #_m_matchedEntity
         sub (hl)
@@ -153,7 +173,7 @@ _man_entityDestroy::
 
 
     ;; Buscamos la ultima entidad
-    ld a, #0x0E
+    ld  a, (#_m_sizeOfEntity)
     setLast:
         dec hl
         dec a
@@ -177,12 +197,13 @@ _man_entityDestroy::
     copy:
     ; cpct_memcpy(e,last,sizeof(Entity_t));
     ld b, #0x00
-    ld c, #0x0E
+    ld  a, (#_m_sizeOfEntity)
+    ld c, a
     call cpct_memcpy_asm
 
     ;;Volvemos a asignar a hl el valor de la ultima entity
     ld hl, #_m_next_free_entity
-    ld a, #0x0E
+    ld  a, (#_m_sizeOfEntity)
     setLast2:
         dec hl
         dec a
@@ -216,7 +237,8 @@ _man_entityUpdate::
     inc (hl)
     dec (hl)
     ret Z 
-    ld c, #0x0E
+    ld a, (#_m_sizeOfEntity)
+    ld c, a
     ld b, #0x00    
     ld a, #0x80    
     valid:
@@ -243,7 +265,7 @@ _man_entityUpdate::
 ;===================================================================================================================================================
 _man_entity_freeSpace::
         ld hl, #_m_numEntities
-        ld a, #0x06
+        ld a, (#_m_numEntities)
         sub (hl)
     ret
 

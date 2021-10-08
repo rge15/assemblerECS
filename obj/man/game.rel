@@ -1,0 +1,111 @@
+XL2
+H 1 areas 24 global symbols
+S .__.H$L. Def0000
+S _man_entityDestroy Ref0000
+S _sys_physics_update Ref0000
+S _sys_ai_update Ref0000
+S _sys_animator_update Ref0000
+S cpct_waitHalts_asm Ref0000
+S _shot_template_e Ref0000
+S .__.ABS. Def0000
+S _mothership_template_e Ref0000
+S _playerLife_template_e Ref0000
+S _player_template_e Ref0000
+S _man_createEntity Ref0000
+S _man_entityInit Ref0000
+S _sys_init_render Ref0000
+S .__.CPU. Def0000
+S cpct_waitVSYNC_asm Ref0000
+S cpct_memcpy_asm Ref0000
+S .__.$$$. Def2710
+S _man_entityUpdate Ref0000
+S _enemy_template_e Ref0000
+S _sys_render_update Ref0000
+A _CODE size A3 flags 0 addr 0
+S waitLoop Def0097
+S _m_game_playerShot Def0071
+S _wait Def0095
+S _m_game_createEnemy Def0054
+S _m_playerShot Def0001
+S _m_game_init Def0013
+S _m_game_tryDownEnemy Def0094
+S _m_game_play Def003F
+S _m_game_createInitTemplate Def0004
+S _m_game_destroyEntity Def0062
+S createLife Def0021
+S _m_playerEntity Def0002
+S updates Def003F
+S notBullet Def006C
+S _enemyOnLane Def0000
+T 00 00
+R 00 00 00 00
+T 00 00 00
+R 00 00 00 00
+T 01 00
+R 00 00 00 00
+T 01 00 00
+R 00 00 00 00
+T 02 00
+R 00 00 00 00
+T 02 00 00 00
+R 00 00 00 00
+T 04 00
+R 00 00 00 00
+T 04 00 CD 00 00 E5 EB 60 69 01 10 00 CD 00 00 E1
+R 00 00 00 00 02 03 0B 00 02 0D 10 00
+T 12 00 C9
+R 00 00 00 00
+T 13 00
+R 00 00 00 00
+T 13 00 CD 00 00 CD 00 00 01 00 00 CD
+R 00 00 00 00 02 03 0D 00 02 06 0C 00 02 09 08 00
+T 1D 00 04 00 3E 0F
+R 00 00 00 00 00 02 00 00
+T 21 00
+R 00 00 00 00
+T 21 00 F5 01 00 00 CD 04 00 23 23 F1 77 D6 05 20
+R 00 00 00 00 02 04 09 00 00 07 00 00
+T 2F 00 F1 01 00 00 CD 04 00 EB 21 02 00 72 23 73
+R 00 00 00 00 02 04 0A 00 00 07 00 00 00 0B 00 00
+T 3D 00 EB C9
+R 00 00 00 00
+T 3F 00
+R 00 00 00 00
+T 3F 00
+R 00 00 00 00
+T 3F 00 CD 00 00 CD 00 00 CD 00 00 CD
+R 00 00 00 00 02 03 03 00 02 06 02 00 02 09 04 00
+T 49 00 00 00 CD 00 00 CD 95 00 18 EC C9
+R 00 00 00 00 02 02 14 00 02 05 12 00 00 08 00 00
+T 54 00
+R 00 00 00 00
+T 54 00 21 00 00 35 34 C0 34 01 00 00 CD 04 00 C9
+R 00 00 00 00 00 03 00 00 02 0A 13 00 00 0D 00 00
+T 62 00
+R 00 00 00 00
+T 62 00 E5 7E E6 08 28 04 21 01 00 35
+R 00 00 00 00 00 09 00 00
+T 6C 00
+R 00 00 00 00
+T 6C 00 E1 CD 00 00 C9
+R 00 00 00 00 02 04 01 00
+T 71 00
+R 00 00 00 00
+T 71 00 21 01 00 35 34 C0 01 00 00 CD 04 00 23 23
+R 00 00 00 00 00 03 00 00 02 09 06 00 00 0C 00 00
+T 7F 00 EB 21 02 00 46 23 4E 60 69 23 23 7E C6 02
+R 00 00 00 00 00 04 00 00
+T 8D 00 EB 77 21 01 00 34 C9
+R 00 00 00 00 00 05 00 00
+T 94 00
+R 00 00 00 00
+T 94 00 C9
+R 00 00 00 00
+T 95 00
+R 00 00 00 00
+T 95 00 26 05
+R 00 00 00 00
+T 97 00
+R 00 00 00 00
+T 97 00 06 02 CD 00 00 CD 00 00 25 20 F5 C9
+R 00 00 00 00 02 05 05 00 02 08 0F 00
